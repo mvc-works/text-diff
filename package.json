@@ -1,0 +1,30 @@
+{
+  "name": "homemade-diff",
+  "version": "0.0.1",
+  "description": "A tiny and slow LCS diff exercise",
+  "main": "lib/diff.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "cirru-script tests/simple.cirru"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jiyinyiyong/homemade-diff.git"
+  },
+  "keywords": [
+    "diff"
+  ],
+  "author": "jiyinyiyong",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jiyinyiyong/homemade-diff/issues"
+  },
+  "homepage": "https://github.com/jiyinyiyong/homemade-diff#readme",
+  "devDependencies": {
+    "cirru-script": "^0.2.3",
+    "gulp": "^3.9.0",
+    "gulp-cirru-script": "^0.1.4"
+  }
+}
