@@ -1,29 +1,29 @@
 {
-  "name": "text-diff",
+  "name": "calcit-workflow",
   "version": "0.1.0",
   "description": "ClojureScript workflow using Calcit Editor",
   "main": "index.js",
   "scripts": {
     "watch": "shadow-cljs watch client",
     "serve": "http-server dist -s",
-    "repl": "rlwrap shadow-cljs clj-repl",
+    "build-cdn": "shadow-cljs clj-run build.main/build-cdn",
     "build": "shadow-cljs clj-run build.main/build",
-    "build-local": "shadow-cljs clj-run build.main/build-local",
+    "up": "yarn build-cdn && tiye-up",
     "page": "shadow-cljs clj-run build.main/page",
-    "upload": "lumo -c cli/:src/ -m build.upload",
     "ln": "cd target && rm -f entry && ln -s ../entry"
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:mvc-works/text-diff.git"
+    "url": "git@github.com:mvc-works/calcit-workflow.git"
   },
   "author": "jiyinyiyong",
   "license": "MIT",
   "devDependencies": {
     "http-server": "^0.11.1",
-    "shadow-cljs": "^2.6.3"
+    "shadow-cljs": "^2.8.52"
   },
   "dependencies": {
-    "shortid": "^2.2.13"
+    "feather-icons": "^4.24.1",
+    "shortid": "^2.2.14"
   }
 }
