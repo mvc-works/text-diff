@@ -2,10 +2,9 @@
 (ns text-diff.comp.container
   (:require [hsl.core :refer [hsl]]
             [respo-ui.core :as ui]
-            [respo.macros
+            [respo.core
              :refer
-             [defcomp cursor-> action-> mutation-> <> div button textarea span]]
-            [verbosely.core :refer [verbosely!]]
+             [defcomp cursor-> action-> mutation-> <> div button textarea span input]]
             [respo.comp.space :refer [=<]]
             [reel.comp.reel :refer [comp-reel]]
             [respo-md.comp.md :refer [comp-md]]
@@ -20,11 +19,11 @@
     (textarea
      {:value (:content store),
       :placeholder "Content",
-      :style (merge ui/textarea {:width 640, :height 320}),
+      :style (merge ui/expand ui/textarea {:height 320}),
       :on-input (action-> :content (:value %e))})
     (=< "8px" nil)
     (div
-     {}
+     {:style ui/expand}
      (comp-md "This is some content with `code`")
      (=< "8px" nil)
      (button
