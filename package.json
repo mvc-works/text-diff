@@ -5,8 +5,8 @@
   "main": "index.js",
   "packageManager": "yarn@4.12.0",
   "scripts": {
-    "compile": "cr js",
-    "build": "cr js && yarn vite build --base=./",
+    "compile": "calcit calcit.cirru",
+    "build": "calcit calcit.cirru && yarn vite build --base=./",
     "dev": "yarn vite"
   },
   "repository": {
@@ -20,7 +20,7 @@
     "vite": "^8.0.16"
   },
   "dependencies": {
-    "@calcit/procs": "^0.12.14",
+    "@calcit/procs": "0.13.77",
     "cirru-color": "^0.2.4",
     "copy-text-to-clipboard": "^3.2.2",
     "dayjs": "^1.11.20",
