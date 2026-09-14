@@ -25,7 +25,7 @@ jobs:
     - uses: calcit-lang/setup-calcit@v1
       with:
         tools: calcit,caps
-        caps-version: "0.1.0"
+        caps-version: "0.1.1"
 
     - name: Install dependencies
       run: caps --strict --ci && yarn install --immutable
