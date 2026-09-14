@@ -3,10 +3,7 @@
   :about "|Machine-generated snapshot. Do not edit directly — changes will be overwritten. Use `calcit query` to inspect and `calcit edit`/`calcit tree` to modify. Run `calcit docs agents --contract` before mutations; use `--full` for first orientation or changed contract digest. Manual edits must follow format and schema conventions, then run `calcit edit format`."
   :package |text-diff
   :entries $ {} $ :default
-    {} (:description |Browser-app)
-      :init-fn 'text-diff.main/main!
-      :mode :js
-      :reload-fn 'text-diff.main/reload!
+    {} (:description |Browser-app) (:init-fn 'text-diff.main/main!) (:mode :js) (:reload-fn 'text-diff.main/reload!)
       :feature-policy $ {}
       :modules $ [] |respo.calcit/ |lilac/ |memof/ |respo-ui.calcit/ |respo-markdown.calcit/ |reel.calcit/
       :type-slots $ {}
@@ -32,7 +29,7 @@
                 =< |8px nil
                 div
                   {} $ :style ui/expand
-                  comp-md "|This is some content with `code`"
+                  comp-md "|This is some content with `code`" $ {}
                   =< |8px nil
                   button $ {} (:style ui/button)
                     :inner-text $ str |run
@@ -40,7 +37,8 @@
                       println $ option:unwrap $ get store :content
                 when dev? $ comp-reel (>> states :reel) reel $ {}
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ :: 'Fn $ {} (:return 'respo.schema/Component)
+            :args $ [] $ :: 'Map 'Tag 'Dynamic
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns text-diff.comp.container
           :require
@@ -54,53 +52,60 @@
     'text-diff.config $ %{} 'FileEntry
       :defs $ {}
         'cdn? $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ def cdn?
+          :code $ quote $ def cdn? (detect-cdn?)
+          :examples $ []
+          :schema $ :: 'Bool
+        'detect-cdn? $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn detect-cdn? ()
             cond
                 exists? js/window
                 , false
               (exists? js/process)
-                = |true js/process.env.cdn
-              :else false
+                let
+                    raw js/process.env.cdn
+                  if (js-present? raw)
+                    = |true $ expect-string |process.env.cdn raw
+                    , false
+              true false
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ :: 'Fn $ {} (:return 'Bool)
+            :args $ []
+            :features $ #{} :js-ffi
         'dev? $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def dev?
             = |dev $ option:unwrap-or (get-env |mode) |release
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ :: 'Bool
         'site $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def site
-            {}
-              :dev-ui |http://localhost:8100/main-fonts.css
-              :release-ui |http://cdn.tiye.me/favored-fonts/main-fonts.css
-              :cdn-url |http://cdn.tiye.me/calcit-workflow/
-              :title |Calcit
-              :icon |http://cdn.tiye.me/logo/mvc-works.png
-              :storage-key |workflow
+            {} (:dev-ui |http://localhost:8100/main-fonts.css) (:release-ui |http://cdn.tiye.me/favored-fonts/main-fonts.css) (:cdn-url |http://cdn.tiye.me/calcit-workflow/) (:title |Calcit) (:icon |http://cdn.tiye.me/logo/mvc-works.png) (:storage-key |workflow)
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ :: 'Map 'Tag 'String
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns text-diff.config
+          :require $ js-ffi.contract :refer $ [] expect-string
     'text-diff.main $ %{} 'FileEntry
       :defs $ {}
         '*reel $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defatom *reel
             -> reel-schema/reel (assoc :base schema/store) (assoc :store schema/store)
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ :: 'Ref 'Dynamic
         'dispatch! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch! (op)
             when config/dev? $ println |Dispatch: op
             reset! *reel $ reel-updater updater @*reel op
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ :: 'Fn $ {} (:return 'Unit)
+            :args $ [] 'Enum
+            :features $ #{} :js-ffi
         'main! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn main! ()
             println "|Running mode:" $ if config/dev? |dev |release
             render-app!
             add-watch *reel :changes $ fn (r p) (render-app!)
             listen-devtools! |a dispatch!
-            js/window.addEventListener |beforeunload persist-storage!
+            js/window.addEventListener |beforeunload $ fn (event) (persist-storage!)
             ; flipped js/setInterval 60000 persist-storage!
             let
                 raw $ js/localStorage.getItem $ option:unwrap (get config/site :storage-key)
@@ -108,20 +113,23 @@
                 dispatch! $ :: :hydrate-storage $ parse-cirru-edn raw
             println "|App started."
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ :: 'Fn $ {} (:return 'Unit)
+            :args $ []
+            :features $ #{} :js-ffi
         'mount-target $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ def mount-target
-            js/document.querySelector |.app
+          :code $ quote $ def mount-target (js/document.querySelector |.app)
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ :: 'JsObject
         'persist-storage! $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn persist-storage! (? e)
+          :code $ quote $ defn persist-storage! ()
             js/localStorage.setItem
               option:unwrap $ get config/site :storage-key
               format-cirru-edn $ option:unwrap $ get @*reel :store
             , &unit
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ :: 'Fn $ {} (:return 'Unit)
+            :args $ []
+            :features $ #{} :js-ffi
         'reload! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn reload! ()
             if (nil? build-errors)
@@ -131,16 +139,21 @@
                 hud! |ok~ |Ok
               hud! |error build-errors
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ :: 'Fn $ {} (:return 'Unit)
+            :args $ []
+            :features $ #{} :js-ffi
         'render-app! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn render-app! ()
             render! mount-target (comp-container @*reel) dispatch!
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ :: 'Fn $ {} (:return 'Unit)
+            :args $ []
+            :features $ #{} :js-ffi
         'snippets $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn snippets () (println config/cdn?)
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ :: 'Fn $ {} (:return 'Unit)
+            :args $ []
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns text-diff.main
           :require
@@ -155,14 +168,16 @@
             |./calcit.build-errors :default build-errors
             |bottom-tip :default hud!
     'text-diff.schema $ %{} 'FileEntry
-      :defs $ {} $ 'store
-        %{} 'CodeEntry (:doc |)
-          :code $ quote $ def store
-            {}
-              :states $ {}
-              :content |
+      :defs $ {}
+        'Store $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defstruct Store (:states 'Dynamic) (:content 'String)
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ :: 'StructDef
+        'store $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ def store
+            Store :states ({}) :content |
+          :examples $ []
+          :schema $ :: 'text-diff.schema/Store
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns text-diff.schema
     'text-diff.updater $ %{} 'FileEntry
@@ -175,7 +190,8 @@
               (:hydrate-storage d) d
               _ $ do (eprintln "|Unknown op:" op) store
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ :: 'Fn $ {} (:return 'text-diff.schema/Store)
+            :args $ [] 'text-diff.schema/Store 'Enum 'String 'Number
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns text-diff.updater
           :require $ [] respo.cursor :refer $ [] update-states
