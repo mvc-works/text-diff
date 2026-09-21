@@ -5,7 +5,7 @@
   :entries $ {} $ :default
     {} (:description |Browser-app) (:init-fn 'text-diff.main/main!) (:mode :js) (:reload-fn 'text-diff.main/reload!)
       :feature-policy $ {}
-      :modules $ [] |respo.calcit/ |lilac/ |memof/ |respo-ui.calcit/ |respo-markdown.calcit/ |reel.calcit/
+      :modules $ [] |respo.calcit/ |respo-ui.calcit/ |respo-markdown.calcit/ |reel.calcit/
       :type-slots $ {}
   :files $ {}
     'text-diff.comp.container $ %{} 'FileEntry
@@ -117,9 +117,14 @@
             :args $ []
             :features $ #{} :js-ffi
         'mount-target $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ def mount-target (js/document.querySelector |.app)
+          :code $ quote $ defn mount-target ()
+            let
+                target $ js/document.querySelector |.app
+              if (js-present? target) (unsafe-coerce target 'JsObject) (raise "|Missing .app mount target")
           :examples $ []
-          :schema $ :: 'JsObject
+          :schema $ :: 'Fn $ {} (:return 'JsObject)
+            :args $ []
+            :features $ #{} :js-ffi
         'persist-storage! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn persist-storage! ()
             js/localStorage.setItem
@@ -144,7 +149,7 @@
             :features $ #{} :js-ffi
         'render-app! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn render-app! ()
-            render! mount-target (comp-container @*reel) dispatch!
+            render! (mount-target) (comp-container @*reel) dispatch!
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
             :args $ []
