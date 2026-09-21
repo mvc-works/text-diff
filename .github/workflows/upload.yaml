@@ -35,6 +35,7 @@ jobs:
         caps verify --toolchain
         calcit calcit.cirru edit format
         git diff --exit-code -- calcit.cirru
+        calcit calcit.cirru fix --workflow strict --verify --format edn
         calcit calcit.cirru --check-only
         calcit calcit.cirru analyze quality --baseline config/calcit-quality.cirru
 
