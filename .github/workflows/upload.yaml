@@ -9,6 +9,10 @@ on:
       - main
   pull_request: {}
 
+concurrency:
+  group: cos-upload-${{ github.repository }}-${{ github.event_name == 'pull_request' && 'pr' || 'production' }}
+  cancel-in-progress: false
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -43,6 +47,12 @@ jobs:
 
       - name: Validate Calcit snapshot and types
         run: |
+          set -euo pipefail
+          test "$(calcit --version)" = "0.27.0"
+          test -f calcit.cirru
+          test -f deps.cirru
+          test ! -e compact.cirru
+          test ! -e package.cirru
           calcit calcit.cirru fix --workflow strict --verify --format edn
           calcit calcit.cirru edit format
           git diff --exit-code -- calcit.cirru
@@ -56,6 +66,7 @@ jobs:
         env:
           CDN_ORIGIN: https://cos-sh.tiye.me
         run: |
+          set -euo pipefail
           if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
             asset_prefix="${GITHUB_REPOSITORY}/pr/"
           elif [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
