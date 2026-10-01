@@ -175,7 +175,9 @@
     'text-diff.schema $ %{} 'FileEntry
       :defs $ {}
         'Store $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defstruct Store (:states 'Dynamic) (:content 'String)
+          :code $ quote $ defstruct Store
+            :states $ :: 'Map 'Tag 'Dynamic
+            :content 'String
           :examples $ []
           :schema $ :: 'StructDef
         'store $ %{} 'CodeEntry (:doc |)
