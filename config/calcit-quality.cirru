@@ -26,7 +26,7 @@
       :typeNone 0
       :typeNotFull 0
       :unresolved 0
-      :unsafeCoerce 1
+      :unsafeCoerce 0
   :metrics $ {} (:codeDynamic 0)
     :codeNil 2
     :declaredOptional 0
@@ -35,7 +35,7 @@
     :typeNone 0
     :typeNotFull 2
     :unresolved 4
-    :unsafeCoerce 1
+    :unsafeCoerce 0
   :scope $ {} (:includeDependencies false)
     :namespace nil
     :namespacePrefix nil

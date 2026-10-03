@@ -35,6 +35,13 @@ Calcit 原生 public/quality 门禁。
 而未进入 Vite，见 [Markdown #65](https://github.com/Respo/respo-markdown.calcit/issues/65)。
 因此上述局部测试不是整站/CDN 验收，也不代表已经发布或完成迁移。
 
+本轮跟进已发布的 Reel `0.6.33-alpha.2` / UI `0.7.32-alpha.3`，未增加
+alpha 依赖数量或使用 hash；正式兼容版本仍待上游发布。两个状态监听回调明确
+Map/Unit 契约，原三个状态业务测试与七个非 UI 公共定义在新依赖图下通过。
+完整构建重新确认仍被 Markdown 的 RegExp/Fn 合同阻塞，严格 Caps 仍有
+Markdown/UI 与 JS-FFI 版本冲突。生产上传与服务器同步使用一次 main 提交
+守卫，陈旧任务不会覆盖当前资源；它不替代或重复 action 内置 COS 校验。
+
 Workflow https://github.com/mvc-works/calcit-workflow
 
 ### License

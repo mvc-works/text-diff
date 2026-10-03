@@ -110,7 +110,12 @@
           :code $ quote $ defn main! ()
             println "|Running mode:" $ if config/dev? |dev |release
             render-app!
-            add-watch! *reel :changes $ fn (r p) (render-app!)
+            add-watch! *reel :changes $ fn (r p)
+              hint-fn $ {}
+                :args $ [] (:: 'Map 'Tag 'Dynamic) (:: 'Map 'Tag 'Dynamic)
+                :return 'Unit
+              render-app!
+              , &unit
             listen-devtools! |a dispatch!
             browser/add-event-listener! |beforeunload $ fn (event) (persist-storage!)
             ; flipped js/setInterval 60000 persist-storage!
@@ -144,7 +149,12 @@
           :code $ quote $ defn reload! ()
             if (nil? build-errors)
               do (remove-watch! *reel :changes) (clear-cache!)
-                add-watch! *reel :changes $ fn (reel prev) (render-app!)
+                add-watch! *reel :changes $ fn (reel prev)
+                  hint-fn $ {}
+                    :args $ [] (:: 'Map 'Tag 'Dynamic) (:: 'Map 'Tag 'Dynamic)
+                    :return 'Unit
+                  render-app!
+                  , &unit
                 reset! *reel $ decode-map-as (refresh-reel @*reel schema/store updater) (:: 'Map 'Tag 'Dynamic)
                 hud! |ok~ |Ok
               hud! |error build-errors
