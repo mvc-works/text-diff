@@ -3,9 +3,9 @@
   :about "|Machine-generated snapshot. Do not edit directly — changes will be overwritten. Use `calcit query` to inspect and `calcit edit`/`calcit tree` to modify. Run `calcit docs agents --contract` before mutations; use `--full` for first orientation or changed contract digest. Manual edits must follow format and schema conventions, then run `calcit edit format`."
   :package |text-diff
   :entries $ {} $ :default
-    {} (:description |Browser-app) (:init-fn 'text-diff.main/main!) (:mode :js) (:reload-fn 'text-diff.main/reload!)
+    {} (:description |Browser-app) (:init-fn 'text-diff.main/main!) (:mode :js) (:reload-fn 'text-diff.main/reload!) (:target :browser)
       :feature-policy $ {}
-      :modules $ [] |respo.calcit/ |respo-ui.calcit/ |respo-markdown.calcit/ |reel.calcit/
+      :modules $ [] |respo.calcit/ |respo-ui.calcit/ |respo-markdown.calcit/ |reel.calcit/ |js-ffi/
       :type-slots $ {}
   :files $ {}
     'text-diff.comp.container $ %{} 'FileEntry
@@ -13,19 +13,26 @@
         %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-container (reel)
             let
-                store $ option:unwrap $ get reel :store
-                states $ option:unwrap $ get store :states
+                store $ .unwrap $ get reel :store
+                states $ .unwrap $ get store :states
               div
                 {} $ :style $ merge ui/global ui/row
                 textarea $ {}
-                  :value $ option:unwrap $ get store :content
+                  :value $ .unwrap $ get store :content
                   :placeholder |Content
                   :style $ merge ui/expand ui/textarea $ {} (:height 320)
                   :on-input $ fn (e d!)
                     hint-fn $ {}
-                      :args $ [] 'respo.schema/RespoEvent 'Dynamic
-                      :return 'Dynamic
-                    d! :content $ :value e
+                      :args $ [] (:: 'Map 'Tag 'Dynamic)
+                        :: 'Fn $ {}
+                          :args $ [] 'Enum
+                          :return 'Unit
+                      :return 'Unit
+                    let
+                        value $ .unwrap $ get e :value
+                      if (string? value)
+                        d! $ :: :content value
+                        raise |Expected-string-input-value
                 =< |8px nil
                 div
                   {} $ :style ui/expand
@@ -34,7 +41,7 @@
                   button $ {} (:style ui/button)
                     :inner-text $ str |run
                     :on-click $ fn (e d!)
-                      println $ option:unwrap $ get store :content
+                      println $ .unwrap $ get store :content
                 when dev? $ comp-reel (>> states :reel) reel $ {}
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'respo.schema/Component)
@@ -73,7 +80,7 @@
             :features $ #{} :js-ffi
         'dev? $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def dev?
-            = |dev $ option:unwrap-or (get-env |mode) |release
+            = |dev $ .unwrap-or (get-env |mode) |release
           :examples $ []
           :schema $ :: 'Bool
         'site $ %{} 'CodeEntry (:doc |)
@@ -90,7 +97,7 @@
           :code $ quote $ defatom *reel
             -> reel-schema/reel (assoc :base schema/store) (assoc :store schema/store)
           :examples $ []
-          :schema $ :: 'Ref 'Dynamic
+          :schema $ :: 'Ref $ :: 'Map 'Tag 'Dynamic
         'dispatch! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch! (op)
             when config/dev? $ println |Dispatch: op
@@ -103,14 +110,15 @@
           :code $ quote $ defn main! ()
             println "|Running mode:" $ if config/dev? |dev |release
             render-app!
-            add-watch *reel :changes $ fn (r p) (render-app!)
+            add-watch! *reel :changes $ fn (r p) (render-app!)
             listen-devtools! |a dispatch!
-            js/window.addEventListener |beforeunload $ fn (event) (persist-storage!)
+            browser/add-event-listener! |beforeunload $ fn (event) (persist-storage!)
             ; flipped js/setInterval 60000 persist-storage!
-            let
-                raw $ js/localStorage.getItem $ option:unwrap (get config/site :storage-key)
-              when (string? raw)
+            match
+              browser/storage-get $ .unwrap $ get config/site :storage-key
+              (:some raw)
                 dispatch! $ :: :hydrate-storage $ parse-cirru-edn raw
+              (:none) &unit
             println "|App started."
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
@@ -118,18 +126,15 @@
             :features $ #{} :js-ffi
         'mount-target $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn mount-target ()
-            let
-                target $ js/document.querySelector |.app
-              if (js-present? target) (unsafe-coerce target 'JsObject) (raise "|Missing .app mount target")
+            .unwrap $ browser/query-selector |.app
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'JsObject)
+          :schema $ :: 'Fn $ {} (:return 'js-ffi.browser/DomElementHost)
             :args $ []
-            :features $ #{} :js-ffi
         'persist-storage! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn persist-storage! ()
-            js/localStorage.setItem
-              option:unwrap $ get config/site :storage-key
-              format-cirru-edn $ option:unwrap $ get @*reel :store
+            browser/storage-set!
+              .unwrap $ get config/site :storage-key
+              format-cirru-edn $ &struct:to-map $ .unwrap (get @*reel :store)
             , &unit
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
@@ -138,9 +143,9 @@
         'reload! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn reload! ()
             if (nil? build-errors)
-              do (remove-watch *reel :changes) (clear-cache!)
-                add-watch *reel :changes $ fn (reel prev) (render-app!)
-                reset! *reel $ refresh-reel @*reel schema/store updater
+              do (remove-watch! *reel :changes) (clear-cache!)
+                add-watch! *reel :changes $ fn (reel prev) (render-app!)
+                reset! *reel $ decode-map-as (refresh-reel @*reel schema/store updater) (:: 'Map 'Tag 'Dynamic)
                 hud! |ok~ |Ok
               hud! |error build-errors
           :examples $ []
@@ -172,6 +177,7 @@
             [] text-diff.config :as config
             |./calcit.build-errors :default build-errors
             |bottom-tip :default hud!
+            js-ffi.browser :as browser
     'text-diff.schema $ %{} 'FileEntry
       :defs $ {}
         'Store $ %{} 'CodeEntry (:doc |)
@@ -194,7 +200,10 @@
             match op
               (:states cursor s) (update-states store cursor s)
               (:content c) (assoc store :content c)
-              (:hydrate-storage d) d
+              (:hydrate-storage d)
+                decode-map-as
+                  if (struct? d) (&struct:to-map d) d
+                  , 'text-diff.schema/Store
               _ $ do (eprintln "|Unknown op:" op) store
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'text-diff.schema/Store)
