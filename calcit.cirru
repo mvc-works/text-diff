@@ -94,7 +94,7 @@
     'text-diff.main $ %{} 'FileEntry
       :defs $ {}
         '*reel $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defatom *reel
+          :code $ quote $ defref *reel
             -> reel-schema/reel (assoc :base schema/store) (assoc :store schema/store)
           :examples $ []
           :schema $ :: 'Ref $ :: 'Map 'Tag 'Dynamic
@@ -102,6 +102,7 @@
           :code $ quote $ defn dispatch! (op)
             when config/dev? $ println |Dispatch: op
             reset! *reel $ reel-updater updater @*reel op
+            , &unit
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
             :args $ [] 'Enum
@@ -131,10 +132,11 @@
             :features $ #{} :js-ffi
         'mount-target $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn mount-target ()
-            .unwrap $ browser/query-selector |.app
+            .unwrap $ respo-browser/query-selector |.app
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'js-ffi.browser/DomElementHost)
+          :schema $ :: 'Fn $ {} (:return 'respo.dom/DomElement)
             :args $ []
+            :features $ #{} :js-ffi
         'persist-storage! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn persist-storage! ()
             browser/storage-set!
@@ -188,6 +190,7 @@
             |./calcit.build-errors :default build-errors
             |bottom-tip :default hud!
             js-ffi.browser :as browser
+            respo.ffi.browser :as respo-browser
     'text-diff.schema $ %{} 'FileEntry
       :defs $ {}
         'Store $ %{} 'CodeEntry (:doc |)
