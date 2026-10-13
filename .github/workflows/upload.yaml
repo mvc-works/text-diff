@@ -11,12 +11,13 @@ on:
 
 concurrency:
   group: cos-upload-${{ github.repository }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'production' }}
-  queue: max
   cancel-in-progress: false
+  queue: max
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -38,12 +39,11 @@ jobs:
           corepack prepare yarn@4.18.0 --activate
           yarn --version
 
-      # Current Respo modules still request preceding compatible releases, so
-      # strict Caps resolution rejects the highest SemVer set selected here.
       - name: Install and validate dependencies
         run: |
-          caps --ci
+          caps --strict --ci
           yarn install --immutable
+          caps verify --toolchain
 
       - name: Validate Calcit snapshot and types
         run: |
@@ -53,6 +53,7 @@ jobs:
           calcit calcit.cirru edit format
           git diff --exit-code -- calcit.cirru
           calcit calcit.cirru --check-only
+          calcit calcit.cirru --check-only --ns text-diff.comp.container --ns text-diff.config --ns text-diff.main --ns text-diff.schema --ns text-diff.updater --summary-only
 
       - name: Build client with CDN asset URLs
         id: asset-path
@@ -73,9 +74,23 @@ jobs:
           yarn build
           node --test scripts/upgrade.test.mjs
 
+      - name: Check current production commit
+        id: current-main
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          set -euo pipefail
+          current_main="$(git ls-remote origin refs/heads/main | cut -f1)"
+          test -n "$current_main"
+          if [[ "$current_main" == "$GITHUB_SHA" ]]; then
+            echo "current=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "current=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Upload static assets to COS
-        if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+        if: steps.current-main.outputs.current != 'false' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
         uses: worktools/cos-upload-action@06d6027dcca6413c5936e04a9b6e9f0d5ef71ba0 # v1.2.0
+        timeout-minutes: 10
         with:
           source-dir: dist
           bucket: ${{ secrets.COS_BUCKET }}
@@ -87,7 +102,7 @@ jobs:
 
       - name: Deploy to server
         id: deploy
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.current-main.outputs.current == 'true'
         uses: Pendect/action-rsyncer@8e05ffa5c93e5d9c9b167796b26044d2c616b2b9 # v2.0.0
         env:
           DEPLOY_KEY: ${{secrets.rsync_private_key}}
@@ -99,5 +114,5 @@ jobs:
           dest: "rsync-user@tiye.me:/web-assets/repo/${{ github.repository }}"
 
       - name: Display status from deploy
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.current-main.outputs.current == 'true'
         run: echo "${{ steps.deploy.outputs.status }}"
