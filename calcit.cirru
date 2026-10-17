@@ -13,12 +13,12 @@
         %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-container (reel)
             let
-                store $ .unwrap $ get reel :store
-                states $ .unwrap $ get store :states
+                store $ :store reel
+                states $ :states store
               div
                 {} $ :style $ merge ui/global ui/row
                 textarea $ {}
-                  :value $ .unwrap $ get store :content
+                  :value $ :content store
                   :placeholder |Content
                   :style $ merge ui/expand ui/textarea $ {} (:height 320)
                   :on-input $ fn (e d!)
@@ -41,21 +41,21 @@
                   button $ {} (:style ui/button)
                     :inner-text $ str |run
                     :on-click $ fn (e d!)
-                      println $ .unwrap $ get store :content
-                when dev? $ comp-reel (>> states :reel) reel $ {}
+                      println $ :content store
+                when dev? $ comp-typed-reel (>> states :reel) reel $ {}
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'respo.schema/Component)
-            :args $ [] $ :: 'Map 'Tag 'Dynamic
+            :args $ [] $ :: 'reel.typed/State 'Enum 'text-diff.schema/Store
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns text-diff.comp.container
           :require
-            [] hsl.core :refer $ [] hsl
-            [] respo-ui.core :as ui
-            [] respo.core :refer $ [] defcomp >> <> div button textarea span input
-            [] respo.comp.space :refer $ [] =<
-            [] reel.comp.reel :refer $ [] comp-reel
-            [] respo-md.comp.md :refer $ [] comp-md
-            [] text-diff.config :refer $ [] dev?
+            hsl.core :refer $ hsl
+            respo-ui.core :as ui
+            respo.core :refer $ defcomp >> <> div button textarea span input
+            respo.comp.space :refer $ =<
+            reel.comp.reel :refer $ comp-typed-reel
+            respo-md.comp.md :refer $ comp-md
+            text-diff.config :refer $ dev?
     'text-diff.config $ %{} 'FileEntry
       :defs $ {}
         'cdn? $ %{} 'CodeEntry (:doc |)
@@ -90,22 +90,29 @@
           :schema $ :: 'Map 'Tag 'String
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns text-diff.config
-          :require $ js-ffi.contract :refer $ [] expect-string
+          :require $ js-ffi.contract :refer $ expect-string
     'text-diff.main $ %{} 'FileEntry
       :defs $ {}
         '*reel $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defref *reel
-            -> reel-schema/reel (assoc :base schema/store) (assoc :store schema/store)
+          :code $ quote $ defref *reel (typed/new-reel schema/store)
           :examples $ []
-          :schema $ :: 'Ref $ :: 'Map 'Tag 'Dynamic
+          :schema $ :: 'Ref $ :: 'reel.typed/State 'Enum 'text-diff.schema/Store
         'dispatch! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch! (op)
-            when config/dev? $ println |Dispatch: op
-            reset! *reel $ reel-updater updater @*reel op
-            , &unit
+            if (enum? op)
+              do
+                when config/dev? $ println |Dispatch: op
+                match (typed/decode-control op)
+                  (:some control)
+                    reset! *reel $ typed/apply-control updater @*reel control
+                  (:none)
+                    reset! *reel $ typed/record-op updater @*reel op (generate-id!)
+                      :timestamp $ shared/date-now-snapshot
+                , &unit
+              raise "|Expected an operation enum"
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ [] 'Enum
+            :args $ [] 'Dynamic
             :features $ #{} :js-ffi
         'main! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn main! ()
@@ -113,7 +120,7 @@
             render-app!
             add-watch! *reel :changes $ fn (r p)
               hint-fn $ {}
-                :args $ [] (:: 'Map 'Tag 'Dynamic) (:: 'Map 'Tag 'Dynamic)
+                :args $ [] (:: 'reel.typed/State 'Enum 'text-diff.schema/Store) (:: 'reel.typed/State 'Enum 'text-diff.schema/Store)
                 :return 'Unit
               render-app!
               , &unit
@@ -141,7 +148,7 @@
           :code $ quote $ defn persist-storage! ()
             browser/storage-set!
               .unwrap $ get config/site :storage-key
-              format-cirru-edn $ &struct:to-map $ .unwrap (get @*reel :store)
+              format-cirru-edn $ &struct:to-map $ :store @*reel
             , &unit
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
@@ -153,13 +160,14 @@
               do (remove-watch! *reel :changes) (clear-cache!)
                 add-watch! *reel :changes $ fn (reel prev)
                   hint-fn $ {}
-                    :args $ [] (:: 'Map 'Tag 'Dynamic) (:: 'Map 'Tag 'Dynamic)
+                    :args $ [] (:: 'reel.typed/State 'Enum 'text-diff.schema/Store) (:: 'reel.typed/State 'Enum 'text-diff.schema/Store)
                     :return 'Unit
                   render-app!
                   , &unit
-                reset! *reel $ decode-map-as (refresh-reel @*reel schema/store updater) (:: 'Map 'Tag 'Dynamic)
+                reset! *reel $ typed/refresh updater @*reel schema/store
                 hud! |ok~ |Ok
               hud! |error build-errors
+            , &unit
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
             :args $ []
@@ -179,18 +187,18 @@
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns text-diff.main
           :require
-            [] respo.core :refer $ [] render! clear-cache! realize-ssr!
-            [] text-diff.comp.container :refer $ [] comp-container
-            [] text-diff.updater :refer $ [] updater
-            [] text-diff.schema :as schema
-            [] reel.util :refer $ [] listen-devtools!
-            [] reel.core :refer $ [] reel-updater refresh-reel
-            reel.schema :as reel-schema
-            [] text-diff.config :as config
+            respo.core :refer $ render! clear-cache! realize-ssr!
+            text-diff.comp.container :refer $ comp-container
+            text-diff.updater :refer $ updater
+            text-diff.schema :as schema
+            reel.util :refer $ listen-devtools! generate-id!
+            text-diff.config :as config
             |./calcit.build-errors :default build-errors
             |bottom-tip :default hud!
             js-ffi.browser :as browser
             respo.ffi.browser :as respo-browser
+            reel.typed :as typed
+            js-ffi.shared :as shared
     'text-diff.schema $ %{} 'FileEntry
       :defs $ {}
         'Store $ %{} 'CodeEntry (:doc |)
@@ -211,8 +219,14 @@
         %{} 'CodeEntry (:doc |)
           :code $ quote $ defn updater (store op op-id op-time)
             match op
-              (:states cursor s) (update-states store cursor s)
-              (:content c) (assoc store :content c)
+              (:states cursor s)
+                assoc store :states $ decode-map-as
+                  update-state-tree (:states store)
+                    decode-map-as cursor $ :: 'List 'Dynamic
+                    , s
+                  :: 'Map 'Tag 'Dynamic
+              (:content c)
+                assoc store :content $ decode-map-as c 'String
               (:hydrate-storage d)
                 decode-map-as
                   if (struct? d) (&struct:to-map d) d
@@ -223,4 +237,4 @@
             :args $ [] 'text-diff.schema/Store 'Enum 'String 'Number
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns text-diff.updater
-          :require $ [] respo.cursor :refer $ [] update-states
+          :require $ respo.cursor :refer $ update-state-tree
