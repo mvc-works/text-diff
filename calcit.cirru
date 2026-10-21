@@ -125,13 +125,12 @@
               render-app!
               , &unit
             listen-devtools! |a dispatch!
-            browser/add-event-listener! |beforeunload $ fn (event) (persist-storage!)
-            ; flipped js/setInterval 60000 persist-storage!
             match
               browser/storage-get $ .unwrap $ get config/site :storage-key
               (:some raw)
                 dispatch! $ :: :hydrate-storage $ parse-cirru-edn raw
               (:none) &unit
+            browser/add-event-listener! |beforeunload $ fn (event) (persist-storage!)
             println "|App started."
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
