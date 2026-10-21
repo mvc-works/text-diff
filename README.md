@@ -3,7 +3,19 @@ Text diff
 
 > a diffing library for [diffview](https://github.com/Memkits/diffview). WIP...
 
-### 0.30.1 迁移：用户影响
+### 本轮完整正式依赖图：用户影响
+
+CLI/procs 继续配对正式 `0.30.1`；直接依赖升级为已发布的 Reel `0.6.41`、
+Markdown `0.4.59`、UI `0.8.0`、Respo `0.16.124`、JS-FFI `0.2.5`。
+请重新安装完整图、生成 JS 并完整刷新，不混用旧模块实例；UI 升级可能有样式差异，
+不承诺逐像素相同。不能只凭根版本号判断模块图已完成正式配对。
+
+本轮不修改应用 Snapshot、Store/Enum 操作、原三项业务测试、存档 key 或恢复失败保护。
+保留 all-defs、完整 strict、deprecated-call/dynamic-method 零门禁，移除 all-defs
+已覆盖的五 namespace 重复检查；不增加脚本、预算、强转或 concurrently。
+COS 仅用 action 内置 verify，原前端部署路径不变；不合并或部署生产，不重启后端或发版。
+
+### 历史：此前已合并的源码与根工具链迁移
 
 本轮从 alpha.4 成对升级到正式 Calcit/procs `0.30.1`，模块使用正式
 Respo `0.16.122`、Reel `0.6.39`、UI `0.7.41`、Markdown `0.4.58`、JS-FFI `0.2.3`。

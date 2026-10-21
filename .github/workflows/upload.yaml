@@ -55,7 +55,6 @@ jobs:
           calcit calcit.cirru edit format
           git diff --exit-code -- calcit.cirru
           calcit calcit.cirru --check-only --all-defs --format json
-          calcit calcit.cirru --check-only --ns text-diff.comp.container --ns text-diff.config --ns text-diff.main --ns text-diff.schema --ns text-diff.updater --summary-only
           calcit calcit.cirru fix --workflow strict --verify --format json
           calcit calcit.cirru analyze weak-types --only deprecated-call --summary-only --format json | jq -e '.data.summary.calls == 0'
           calcit calcit.cirru analyze weak-types --only dynamic-method --summary-only --format json | jq -e '.data.summary.findings == 0'
