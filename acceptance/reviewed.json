@@ -1,0 +1,1274 @@
+[
+  {
+    "code": [
+      "def",
+      "calcit-dirname",
+      "|"
+    ],
+    "doc": "",
+    "examples": [],
+    "ffi": null,
+    "ffi_edn": null,
+    "id": "text-diff.$meta/calcit-dirname",
+    "js_ffi": null,
+    "schema": null,
+    "tags": [],
+    "tests": []
+  },
+  {
+    "code": [
+      "def",
+      "calcit-filename",
+      "|calcit.cirru"
+    ],
+    "doc": "",
+    "examples": [],
+    "ffi": null,
+    "ffi_edn": null,
+    "id": "text-diff.$meta/calcit-filename",
+    "js_ffi": null,
+    "schema": null,
+    "tags": [],
+    "tests": []
+  },
+  {
+    "code": [
+      "defcomp",
+      "comp-container",
+      [
+        "reel"
+      ],
+      [
+        "let",
+        [
+          [
+            "store",
+            [
+              ":store",
+              "reel"
+            ]
+          ],
+          [
+            "states",
+            [
+              ":states",
+              "store"
+            ]
+          ]
+        ],
+        [
+          "div",
+          [
+            "{}",
+            [
+              ":style",
+              [
+                "merge",
+                "ui/global",
+                "ui/row"
+              ]
+            ]
+          ],
+          [
+            "textarea",
+            [
+              "{}",
+              [
+                ":value",
+                [
+                  ":content",
+                  "store"
+                ]
+              ],
+              [
+                ":placeholder",
+                "|Content"
+              ],
+              [
+                ":style",
+                [
+                  "merge",
+                  "ui/expand",
+                  "ui/textarea",
+                  [
+                    "{}",
+                    [
+                      ":height",
+                      "320"
+                    ]
+                  ]
+                ]
+              ],
+              [
+                ":on-input",
+                [
+                  "fn",
+                  [
+                    "e",
+                    "d!"
+                  ],
+                  [
+                    "hint-fn",
+                    [
+                      "{}",
+                      [
+                        ":args",
+                        [
+                          "[]",
+                          [
+                            "::",
+                            "'Map",
+                            "'Tag",
+                            "'Dynamic"
+                          ],
+                          [
+                            "::",
+                            "'Fn",
+                            [
+                              "{}",
+                              [
+                                ":args",
+                                [
+                                  "[]",
+                                  "'Enum"
+                                ]
+                              ],
+                              [
+                                ":return",
+                                "'Unit"
+                              ]
+                            ]
+                          ]
+                        ]
+                      ],
+                      [
+                        ":return",
+                        "'Unit"
+                      ]
+                    ]
+                  ],
+                  [
+                    "let",
+                    [
+                      [
+                        "value",
+                        [
+                          ".unwrap",
+                          [
+                            "get",
+                            "e",
+                            ":value"
+                          ]
+                        ]
+                      ]
+                    ],
+                    [
+                      "if",
+                      [
+                        "string?",
+                        "value"
+                      ],
+                      [
+                        "d!",
+                        [
+                          "::",
+                          ":content",
+                          "value"
+                        ]
+                      ],
+                      [
+                        "raise",
+                        "|Expected-string-input-value"
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ],
+          [
+            "=<",
+            "|8px",
+            "nil"
+          ],
+          [
+            "div",
+            [
+              "{}",
+              [
+                ":style",
+                "ui/expand"
+              ]
+            ],
+            [
+              "comp-md",
+              "|This is some content with `code`",
+              [
+                "{}"
+              ]
+            ],
+            [
+              "=<",
+              "|8px",
+              "nil"
+            ],
+            [
+              "button",
+              [
+                "{}",
+                [
+                  ":style",
+                  "ui/button"
+                ],
+                [
+                  ":inner-text",
+                  [
+                    "str",
+                    "|run"
+                  ]
+                ],
+                [
+                  ":on-click",
+                  [
+                    "fn",
+                    [
+                      "e",
+                      "d!"
+                    ],
+                    [
+                      "println",
+                      [
+                        ":content",
+                        "store"
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ],
+          [
+            "when",
+            "dev?",
+            [
+              "comp-typed-reel",
+              [
+                ">>",
+                "states",
+                ":reel"
+              ],
+              "reel",
+              [
+                "{}"
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    "doc": "",
+    "examples": [],
+    "ffi": null,
+    "ffi_edn": null,
+    "id": "text-diff.comp.container/comp-container",
+    "js_ffi": null,
+    "schema": [
+      "{}",
+      [
+        ":kind",
+        ":fn"
+      ],
+      [
+        ":return",
+        "'respo.schema/Component"
+      ],
+      [
+        ":args",
+        [
+          "[]",
+          [
+            "::",
+            "'reel.typed/State",
+            "'Enum",
+            "'text-diff.schema/Store"
+          ]
+        ]
+      ]
+    ],
+    "tags": [],
+    "tests": []
+  },
+  {
+    "code": [
+      "def",
+      "cdn?",
+      [
+        "detect-cdn?"
+      ]
+    ],
+    "doc": "",
+    "examples": [],
+    "ffi": null,
+    "ffi_edn": null,
+    "id": "text-diff.config/cdn?",
+    "js_ffi": null,
+    "schema": "'Bool",
+    "tags": [],
+    "tests": []
+  },
+  {
+    "code": [
+      "defn",
+      "detect-cdn?",
+      [],
+      [
+        "cond",
+        [
+          [
+            "exists?",
+            "js/window"
+          ],
+          "false"
+        ],
+        [
+          [
+            "exists?",
+            "js/process"
+          ],
+          [
+            "let",
+            [
+              [
+                "raw",
+                "js/process.env.cdn"
+              ]
+            ],
+            [
+              "if",
+              [
+                "js-present?",
+                "raw"
+              ],
+              [
+                "=",
+                "|true",
+                [
+                  "expect-string",
+                  "|process.env.cdn",
+                  "raw"
+                ]
+              ],
+              "false"
+            ]
+          ]
+        ],
+        [
+          "true",
+          "false"
+        ]
+      ]
+    ],
+    "doc": "",
+    "examples": [],
+    "ffi": null,
+    "ffi_edn": null,
+    "id": "text-diff.config/detect-cdn?",
+    "js_ffi": null,
+    "schema": [
+      "{}",
+      [
+        ":kind",
+        ":fn"
+      ],
+      [
+        ":return",
+        "'Bool"
+      ],
+      [
+        ":args",
+        [
+          "[]"
+        ]
+      ],
+      [
+        ":features",
+        [
+          "#{}",
+          ":js-ffi"
+        ]
+      ]
+    ],
+    "tags": [],
+    "tests": []
+  },
+  {
+    "code": [
+      "def",
+      "dev?",
+      [
+        "=",
+        "|dev",
+        [
+          ".unwrap-or",
+          [
+            "get-env",
+            "|mode"
+          ],
+          "|release"
+        ]
+      ]
+    ],
+    "doc": "",
+    "examples": [],
+    "ffi": null,
+    "ffi_edn": null,
+    "id": "text-diff.config/dev?",
+    "js_ffi": null,
+    "schema": "'Bool",
+    "tags": [],
+    "tests": []
+  },
+  {
+    "code": [
+      "def",
+      "site",
+      [
+        "{}",
+        [
+          ":dev-ui",
+          "|http://localhost:8100/main-fonts.css"
+        ],
+        [
+          ":release-ui",
+          "|http://cdn.tiye.me/favored-fonts/main-fonts.css"
+        ],
+        [
+          ":cdn-url",
+          "|http://cdn.tiye.me/calcit-workflow/"
+        ],
+        [
+          ":title",
+          "|Calcit"
+        ],
+        [
+          ":icon",
+          "|http://cdn.tiye.me/logo/mvc-works.png"
+        ],
+        [
+          ":storage-key",
+          "|workflow"
+        ]
+      ]
+    ],
+    "doc": "",
+    "examples": [],
+    "ffi": null,
+    "ffi_edn": null,
+    "id": "text-diff.config/site",
+    "js_ffi": null,
+    "schema": [
+      "::",
+      "'Map",
+      "'Tag",
+      "'String"
+    ],
+    "tags": [],
+    "tests": []
+  },
+  {
+    "code": [
+      "defref",
+      "*reel",
+      [
+        "typed/new-reel",
+        "schema/store"
+      ]
+    ],
+    "doc": "",
+    "examples": [],
+    "ffi": null,
+    "ffi_edn": null,
+    "id": "text-diff.main/*reel",
+    "js_ffi": null,
+    "schema": [
+      "::",
+      "'Ref",
+      [
+        "::",
+        "'reel.typed/State",
+        "'Enum",
+        "'text-diff.schema/Store"
+      ]
+    ],
+    "tags": [],
+    "tests": []
+  },
+  {
+    "code": [
+      "defn",
+      "dispatch!",
+      [
+        "op"
+      ],
+      [
+        "if",
+        [
+          "enum?",
+          "op"
+        ],
+        [
+          "do",
+          [
+            "when",
+            "config/dev?",
+            [
+              "println",
+              "|Dispatch:",
+              "op"
+            ]
+          ],
+          [
+            "match",
+            [
+              "typed/decode-control",
+              "op"
+            ],
+            [
+              [
+                ":some",
+                "control"
+              ],
+              [
+                "reset!",
+                "*reel",
+                [
+                  "typed/apply-control",
+                  "updater",
+                  "@*reel",
+                  "control"
+                ]
+              ]
+            ],
+            [
+              [
+                ":none"
+              ],
+              [
+                "reset!",
+                "*reel",
+                [
+                  "typed/record-op",
+                  "updater",
+                  "@*reel",
+                  "op",
+                  [
+                    "generate-id!"
+                  ],
+                  [
+                    ":timestamp",
+                    [
+                      "shared/date-now-snapshot"
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ],
+          "&unit"
+        ],
+        [
+          "raise",
+          "|Expected an operation enum"
+        ]
+      ]
+    ],
+    "doc": "",
+    "examples": [],
+    "ffi": null,
+    "ffi_edn": null,
+    "id": "text-diff.main/dispatch!",
+    "js_ffi": null,
+    "schema": [
+      "{}",
+      [
+        ":kind",
+        ":fn"
+      ],
+      [
+        ":return",
+        "'Unit"
+      ],
+      [
+        ":args",
+        [
+          "[]",
+          "'Dynamic"
+        ]
+      ],
+      [
+        ":features",
+        [
+          "#{}",
+          ":js-ffi"
+        ]
+      ]
+    ],
+    "tags": [],
+    "tests": []
+  },
+  {
+    "code": [
+      "defn",
+      "main!",
+      [],
+      [
+        "println",
+        "|Running mode:",
+        [
+          "if",
+          "config/dev?",
+          "|dev",
+          "|release"
+        ]
+      ],
+      [
+        "render-app!"
+      ],
+      [
+        "add-watch!",
+        "*reel",
+        ":changes",
+        [
+          "fn",
+          [
+            "r",
+            "p"
+          ],
+          [
+            "hint-fn",
+            [
+              "{}",
+              [
+                ":args",
+                [
+                  "[]",
+                  [
+                    "::",
+                    "'reel.typed/State",
+                    "'Enum",
+                    "'text-diff.schema/Store"
+                  ],
+                  [
+                    "::",
+                    "'reel.typed/State",
+                    "'Enum",
+                    "'text-diff.schema/Store"
+                  ]
+                ]
+              ],
+              [
+                ":return",
+                "'Unit"
+              ]
+            ]
+          ],
+          [
+            "render-app!"
+          ],
+          "&unit"
+        ]
+      ],
+      [
+        "listen-devtools!",
+        "|a",
+        "dispatch!"
+      ],
+      [
+        "match",
+        [
+          "browser/storage-get",
+          [
+            ".unwrap",
+            [
+              "get",
+              "config/site",
+              ":storage-key"
+            ]
+          ]
+        ],
+        [
+          [
+            ":some",
+            "raw"
+          ],
+          [
+            "dispatch!",
+            [
+              "::",
+              ":hydrate-storage",
+              [
+                "parse-cirru-edn",
+                "raw"
+              ]
+            ]
+          ]
+        ],
+        [
+          [
+            ":none"
+          ],
+          "&unit"
+        ]
+      ],
+      [
+        "browser/add-event-listener!",
+        "|beforeunload",
+        [
+          "fn",
+          [
+            "event"
+          ],
+          [
+            "persist-storage!"
+          ]
+        ]
+      ],
+      [
+        "println",
+        "|App started."
+      ]
+    ],
+    "doc": "",
+    "examples": [],
+    "ffi": null,
+    "ffi_edn": null,
+    "id": "text-diff.main/main!",
+    "js_ffi": null,
+    "schema": [
+      "{}",
+      [
+        ":kind",
+        ":fn"
+      ],
+      [
+        ":return",
+        "'Unit"
+      ],
+      [
+        ":args",
+        [
+          "[]"
+        ]
+      ],
+      [
+        ":features",
+        [
+          "#{}",
+          ":js-ffi"
+        ]
+      ]
+    ],
+    "tags": [],
+    "tests": []
+  },
+  {
+    "code": [
+      "defn",
+      "mount-target",
+      [],
+      [
+        ".unwrap",
+        [
+          "respo-browser/query-selector",
+          "|.app"
+        ]
+      ]
+    ],
+    "doc": "",
+    "examples": [],
+    "ffi": null,
+    "ffi_edn": null,
+    "id": "text-diff.main/mount-target",
+    "js_ffi": null,
+    "schema": [
+      "{}",
+      [
+        ":kind",
+        ":fn"
+      ],
+      [
+        ":return",
+        "'respo.dom/DomElement"
+      ],
+      [
+        ":args",
+        [
+          "[]"
+        ]
+      ],
+      [
+        ":features",
+        [
+          "#{}",
+          ":js-ffi"
+        ]
+      ]
+    ],
+    "tags": [],
+    "tests": []
+  },
+  {
+    "code": [
+      "defn",
+      "persist-storage!",
+      [],
+      [
+        "browser/storage-set!",
+        [
+          ".unwrap",
+          [
+            "get",
+            "config/site",
+            ":storage-key"
+          ]
+        ],
+        [
+          "format-cirru-edn",
+          [
+            "&struct:to-map",
+            [
+              ":store",
+              "@*reel"
+            ]
+          ]
+        ]
+      ],
+      "&unit"
+    ],
+    "doc": "",
+    "examples": [],
+    "ffi": null,
+    "ffi_edn": null,
+    "id": "text-diff.main/persist-storage!",
+    "js_ffi": null,
+    "schema": [
+      "{}",
+      [
+        ":kind",
+        ":fn"
+      ],
+      [
+        ":return",
+        "'Unit"
+      ],
+      [
+        ":args",
+        [
+          "[]"
+        ]
+      ],
+      [
+        ":features",
+        [
+          "#{}",
+          ":js-ffi"
+        ]
+      ]
+    ],
+    "tags": [],
+    "tests": []
+  },
+  {
+    "code": [
+      "defn",
+      "reload!",
+      [],
+      [
+        "if",
+        [
+          "nil?",
+          "build-errors"
+        ],
+        [
+          "do",
+          [
+            "remove-watch!",
+            "*reel",
+            ":changes"
+          ],
+          [
+            "clear-cache!"
+          ],
+          [
+            "add-watch!",
+            "*reel",
+            ":changes",
+            [
+              "fn",
+              [
+                "reel",
+                "prev"
+              ],
+              [
+                "hint-fn",
+                [
+                  "{}",
+                  [
+                    ":args",
+                    [
+                      "[]",
+                      [
+                        "::",
+                        "'reel.typed/State",
+                        "'Enum",
+                        "'text-diff.schema/Store"
+                      ],
+                      [
+                        "::",
+                        "'reel.typed/State",
+                        "'Enum",
+                        "'text-diff.schema/Store"
+                      ]
+                    ]
+                  ],
+                  [
+                    ":return",
+                    "'Unit"
+                  ]
+                ]
+              ],
+              [
+                "render-app!"
+              ],
+              "&unit"
+            ]
+          ],
+          [
+            "reset!",
+            "*reel",
+            [
+              "typed/refresh",
+              "updater",
+              "@*reel",
+              "schema/store"
+            ]
+          ],
+          [
+            "hud!",
+            "|ok~",
+            "|Ok"
+          ]
+        ],
+        [
+          "hud!",
+          "|error",
+          "build-errors"
+        ]
+      ],
+      "&unit"
+    ],
+    "doc": "",
+    "examples": [],
+    "ffi": null,
+    "ffi_edn": null,
+    "id": "text-diff.main/reload!",
+    "js_ffi": null,
+    "schema": [
+      "{}",
+      [
+        ":kind",
+        ":fn"
+      ],
+      [
+        ":return",
+        "'Unit"
+      ],
+      [
+        ":args",
+        [
+          "[]"
+        ]
+      ],
+      [
+        ":features",
+        [
+          "#{}",
+          ":js-ffi"
+        ]
+      ]
+    ],
+    "tags": [],
+    "tests": []
+  },
+  {
+    "code": [
+      "defn",
+      "render-app!",
+      [],
+      [
+        "render!",
+        [
+          "mount-target"
+        ],
+        [
+          "comp-container",
+          "@*reel"
+        ],
+        "dispatch!"
+      ]
+    ],
+    "doc": "",
+    "examples": [],
+    "ffi": null,
+    "ffi_edn": null,
+    "id": "text-diff.main/render-app!",
+    "js_ffi": null,
+    "schema": [
+      "{}",
+      [
+        ":kind",
+        ":fn"
+      ],
+      [
+        ":return",
+        "'Unit"
+      ],
+      [
+        ":args",
+        [
+          "[]"
+        ]
+      ],
+      [
+        ":features",
+        [
+          "#{}",
+          ":js-ffi"
+        ]
+      ]
+    ],
+    "tags": [],
+    "tests": []
+  },
+  {
+    "code": [
+      "defn",
+      "snippets",
+      [],
+      [
+        "println",
+        "config/cdn?"
+      ]
+    ],
+    "doc": "",
+    "examples": [],
+    "ffi": null,
+    "ffi_edn": null,
+    "id": "text-diff.main/snippets",
+    "js_ffi": null,
+    "schema": [
+      "{}",
+      [
+        ":kind",
+        ":fn"
+      ],
+      [
+        ":return",
+        "'Unit"
+      ],
+      [
+        ":args",
+        [
+          "[]"
+        ]
+      ]
+    ],
+    "tags": [],
+    "tests": []
+  },
+  {
+    "code": [
+      "defstruct",
+      "Store",
+      [
+        ":states",
+        [
+          "::",
+          "'Map",
+          "'Tag",
+          "'Dynamic"
+        ]
+      ],
+      [
+        ":content",
+        "'String"
+      ]
+    ],
+    "doc": "",
+    "examples": [],
+    "ffi": null,
+    "ffi_edn": null,
+    "id": "text-diff.schema/Store",
+    "js_ffi": null,
+    "schema": "'StructDef",
+    "tags": [],
+    "tests": []
+  },
+  {
+    "code": [
+      "def",
+      "store",
+      [
+        "Store",
+        ":states",
+        [
+          "{}"
+        ],
+        ":content",
+        "|"
+      ]
+    ],
+    "doc": "",
+    "examples": [],
+    "ffi": null,
+    "ffi_edn": null,
+    "id": "text-diff.schema/store",
+    "js_ffi": null,
+    "schema": "'text-diff.schema/Store",
+    "tags": [],
+    "tests": []
+  },
+  {
+    "code": [
+      "defn",
+      "updater",
+      [
+        "store",
+        "op",
+        "op-id",
+        "op-time"
+      ],
+      [
+        "match",
+        "op",
+        [
+          [
+            ":states",
+            "cursor",
+            "s"
+          ],
+          [
+            "assoc",
+            "store",
+            ":states",
+            [
+              "decode-map-as",
+              [
+                "update-state-tree",
+                [
+                  ":states",
+                  "store"
+                ],
+                [
+                  "decode-map-as",
+                  "cursor",
+                  [
+                    "::",
+                    "'List",
+                    "'Dynamic"
+                  ]
+                ],
+                "s"
+              ],
+              [
+                "::",
+                "'Map",
+                "'Tag",
+                "'Dynamic"
+              ]
+            ]
+          ]
+        ],
+        [
+          [
+            ":content",
+            "c"
+          ],
+          [
+            "assoc",
+            "store",
+            ":content",
+            [
+              "decode-map-as",
+              "c",
+              "'String"
+            ]
+          ]
+        ],
+        [
+          [
+            ":hydrate-storage",
+            "d"
+          ],
+          [
+            "decode-map-as",
+            [
+              "if",
+              [
+                "struct?",
+                "d"
+              ],
+              [
+                "&struct:to-map",
+                "d"
+              ],
+              "d"
+            ],
+            "'text-diff.schema/Store"
+          ]
+        ],
+        [
+          "_",
+          [
+            "do",
+            [
+              "eprintln",
+              "|Unknown op:",
+              "op"
+            ],
+            "store"
+          ]
+        ]
+      ]
+    ],
+    "doc": "",
+    "examples": [],
+    "ffi": null,
+    "ffi_edn": null,
+    "id": "text-diff.updater/updater",
+    "js_ffi": null,
+    "schema": [
+      "{}",
+      [
+        ":kind",
+        ":fn"
+      ],
+      [
+        ":return",
+        "'text-diff.schema/Store"
+      ],
+      [
+        ":args",
+        [
+          "[]",
+          "'text-diff.schema/Store",
+          "'Enum",
+          "'String",
+          "'Number"
+        ]
+      ]
+    ],
+    "tags": [],
+    "tests": []
+  }
+]

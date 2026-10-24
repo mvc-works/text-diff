@@ -7,6 +7,7 @@ on:
   push:
     branches:
       - main
+      - prepare/text-diff-source031
   pull_request: {}
 
 concurrency:
@@ -52,10 +53,11 @@ jobs:
           set -euo pipefail
           test ! -e compact.cirru
           test ! -e package.cirru
+          node prepare-source.mjs
           calcit calcit.cirru edit format
-          git diff --exit-code -- calcit.cirru
+          test "$(git hash-object calcit.cirru)" = "$(cat acceptance/snapshot-blob.txt)"
           calcit calcit.cirru --check-only --all-defs --format json
-          calcit calcit.cirru fix --workflow strict --verify --format json
+          calcit calcit.cirru fix --workflow strict --verify --format json | jq -e 'if .data.workflow.status? == "passed" and .diagnostics? == [] then true else ., false end'
           calcit calcit.cirru analyze weak-types --only deprecated-call --summary-only --format json | jq -e '.data.summary.calls == 0'
           calcit calcit.cirru analyze weak-types --only dynamic-method --summary-only --format json | jq -e '.data.summary.findings == 0'
 
@@ -68,8 +70,10 @@ jobs:
           set -euo pipefail
           if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
             asset_prefix="${GITHUB_REPOSITORY}/pr/${PR_NUMBER}/${GITHUB_RUN_ID}/${GITHUB_RUN_ATTEMPT}/"
-          else
+          elif [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
             asset_prefix="${GITHUB_REPOSITORY}/"
+          else
+            asset_prefix="${GITHUB_REPOSITORY}/branches/${GITHUB_REF_NAME}/${GITHUB_RUN_ID}/${GITHUB_RUN_ATTEMPT}/"
           fi
           export VITE_BASE_URL="${CDN_ORIGIN}/${asset_prefix}"
           echo "VITE_BASE_URL=${VITE_BASE_URL}" >> "$GITHUB_ENV"
@@ -92,7 +96,7 @@ jobs:
           fi
 
       - name: Upload static assets to COS
-        if: steps.current-main.outputs.current != 'false' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
+        if: steps.current-main.outputs.current != 'false' && ((github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository))
         uses: worktools/cos-upload-action@v1.2.0
         timeout-minutes: 10
         with:
@@ -120,3 +124,15 @@ jobs:
       - name: Display status from deploy
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.current-main.outputs.current == 'true'
         run: echo "${{ steps.deploy.outputs.status }}"
+
+      - name: Preserve prepared source and original client
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: text-diff-source-prepared
+          path: |
+            calcit.cirru
+            acceptance/
+            js-out/
+            dist/
+          retention-days: 3
