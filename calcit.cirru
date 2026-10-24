@@ -16,11 +16,11 @@
                 store $ :store reel
                 states $ :states store
               div
-                {} $ :style $ merge ui/global ui/row
+                {} $ :style $ .merge ui/global ui/row
                 textarea $ {}
                   :value $ :content store
                   :placeholder |Content
-                  :style $ merge ui/expand ui/textarea $ {} (:height 320)
+                  :style $ .merge ui/expand ui/textarea $ {} (:height 320)
                   :on-input $ fn (e d!)
                     hint-fn $ {}
                       :args $ [] (:: 'Map 'Tag 'Dynamic)
