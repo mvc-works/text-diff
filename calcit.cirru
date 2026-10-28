@@ -22,12 +22,9 @@
                   :placeholder |Content
                   :style $ .merge ui/expand ui/textarea $ {} (:height 320)
                   :on-input $ fn (e d!)
-                    hint-fn $ {}
-                      :args $ [] (:: 'Map 'Tag 'Dynamic)
-                        :: 'Fn $ {}
-                          :args $ [] 'Enum
-                          :return 'Unit
-                      :return 'Unit
+                    hint-fn $ Fn (Map Tag Dynamic)
+                      Fn Enum $ -> Unit
+                      -> Unit
                     let
                         value $ .unwrap $ get e :value
                       if (string? value)
@@ -44,8 +41,7 @@
                       println $ :content store
                 when dev? $ comp-typed-reel (>> states :reel) reel $ {}
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'respo.schema/Component)
-            :args $ [] $ :: 'reel.typed/State 'Enum 'text-diff.schema/Store
+          :schema $ quote $ Fn (reel.typed/State Enum text-diff.schema/Store) (-> respo.schema/Component)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns text-diff.comp.container
           :require
@@ -61,7 +57,7 @@
         'cdn? $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def cdn? (detect-cdn?)
           :examples $ []
-          :schema $ :: 'Bool
+          :schema $ quote Bool
         'detect-cdn? $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn detect-cdn? ()
             cond
@@ -75,19 +71,17 @@
                     , false
               true false
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Bool)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> Bool) (:features :js-ffi)
         'dev? $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def dev?
             = |dev $ .unwrap-or (get-env |mode) |release
           :examples $ []
-          :schema $ :: 'Bool
+          :schema $ quote Bool
         'site $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def site
             {} (:dev-ui |http://localhost:8100/main-fonts.css) (:release-ui |http://cdn.tiye.me/favored-fonts/main-fonts.css) (:cdn-url |http://cdn.tiye.me/calcit-workflow/) (:title |Calcit) (:icon |http://cdn.tiye.me/logo/mvc-works.png) (:storage-key |workflow)
           :examples $ []
-          :schema $ :: 'Map 'Tag 'String
+          :schema $ quote $ Map Tag String
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns text-diff.config
           :require $ js-ffi.contract :refer $ expect-string
@@ -96,7 +90,7 @@
         '*reel $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defref *reel (typed/new-reel schema/store)
           :examples $ []
-          :schema $ :: 'Ref $ :: 'reel.typed/State 'Enum 'text-diff.schema/Store
+          :schema $ quote $ Ref (reel.typed/State Enum text-diff.schema/Store)
         'dispatch! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch! (op)
             if (enum? op)
@@ -111,17 +105,13 @@
                 , &unit
               raise "|Expected an operation enum"
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ [] 'Dynamic
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn Dynamic (-> Unit) (:features :js-ffi)
         'main! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn main! ()
             println "|Running mode:" $ if config/dev? |dev |release
             render-app!
             add-watch! *reel :changes $ fn (r p)
-              hint-fn $ {}
-                :args $ [] (:: 'reel.typed/State 'Enum 'text-diff.schema/Store) (:: 'reel.typed/State 'Enum 'text-diff.schema/Store)
-                :return 'Unit
+              hint-fn $ Fn (reel.typed/State Enum text-diff.schema/Store) (reel.typed/State Enum text-diff.schema/Store) (-> Unit)
               render-app!
               , &unit
             listen-devtools! |a dispatch!
@@ -133,16 +123,12 @@
             browser/add-event-listener! |beforeunload $ fn (event) (persist-storage!)
             println "|App started."
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
         'mount-target $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn mount-target ()
             .unwrap $ respo-browser/query-selector |.app
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'respo.dom/DomElement)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> respo.dom/DomElement) (:features :js-ffi)
         'persist-storage! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn persist-storage! ()
             browser/storage-set!
@@ -150,17 +136,13 @@
               format-cirru-edn $ &struct:to-map $ :store @*reel
             , &unit
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
         'reload! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn reload! ()
             if (nil? build-errors)
               do (remove-watch! *reel :changes) (clear-cache!)
                 add-watch! *reel :changes $ fn (reel prev)
-                  hint-fn $ {}
-                    :args $ [] (:: 'reel.typed/State 'Enum 'text-diff.schema/Store) (:: 'reel.typed/State 'Enum 'text-diff.schema/Store)
-                    :return 'Unit
+                  hint-fn $ Fn (reel.typed/State Enum text-diff.schema/Store) (reel.typed/State Enum text-diff.schema/Store) (-> Unit)
                   render-app!
                   , &unit
                 reset! *reel $ typed/refresh updater @*reel schema/store
@@ -168,21 +150,16 @@
               hud! |error build-errors
             , &unit
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
         'render-app! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn render-app! ()
             render! (mount-target) (comp-container @*reel) dispatch!
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
         'snippets $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn snippets () (println config/cdn?)
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
+          :schema $ quote $ Fn (-> Unit)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns text-diff.main
           :require
@@ -204,18 +181,18 @@
           :doc "|Open Enum alias for Respo dispatch-op: application operations and Reel controls retain their existing tags and payloads. This representative value is not dispatched; the explicit Enum schema supplies the slot contract. dispatch! and updater keep their existing runtime checks."
           :code $ quote $ def DispatchOp (:: :unhandled)
           :examples $ []
-          :schema $ :: 'Enum
+          :schema $ quote Enum
         'Store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstruct Store
-            :states $ :: 'Map 'Tag 'Dynamic
+            :states $ quote $ Map Tag Dynamic
             :content 'String
           :examples $ []
-          :schema $ :: 'StructDef
+          :schema $ quote StructDef
         'store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def store
             Store :states ({}) :content |
           :examples $ []
-          :schema $ :: 'text-diff.schema/Store
+          :schema $ quote text-diff.schema/Store
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns text-diff.schema
     'text-diff.updater $ %{} 'FileEntry
@@ -237,8 +214,7 @@
                   , 'text-diff.schema/Store
               _ $ do (eprintln "|Unknown op:" op) store
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'text-diff.schema/Store)
-            :args $ [] 'text-diff.schema/Store 'Enum 'String 'Number
+          :schema $ quote $ Fn text-diff.schema/Store Enum String Number (-> text-diff.schema/Store)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns text-diff.updater
           :require $ respo.cursor :refer $ update-state-tree

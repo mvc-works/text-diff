@@ -3,6 +3,19 @@ Text diff
 
 > a diffing library for [diffview](https://github.com/Memkits/diffview). WIP...
 
+### Calcit 0.32.0 迁移候选：用户影响
+
+CLI 与 `@calcit/procs` 配对正式 0.32.0，需要重新安装依赖、生成 JS 并完整刷新。
+配套依赖声明为 Reel 0.7.0、Markdown 0.5.0、UI 0.9.0、Respo 0.17.0 和
+JS-FFI 0.2.8；UI 系列当前使用本地候选，正式标签整图尚待验证。
+
+官方工具转换 4 处旧类型写法，17 个定义的 schema 保持；开放 Enum 派发、
+Map 存档、恢复失败保护、HUD 和部署路径不变。不新增算法、测试脚本或类型预算。
+本轮完整 strict、全部定义、原 3 项测试、构建和 immutable 安装通过；弃用调用与
+动态方法检查均为零。实际合成输入、run 读取内容和刷新恢复通过，浏览器无警告或
+错误，独立评审无待处理问题。正式依赖整图及远端 CI 尚待验收。
+npm 发布年龄门禁为一小时，无单包例外。
+
 ### Calcit 0.31.0 迁移：用户影响
 
 CLI 与 JS runtime 配对正式 `0.31.0`。请重新安装依赖、生成 JS 并完整刷新，
