@@ -3,7 +3,24 @@ Text diff
 
 > a diffing library for [diffview](https://github.com/Memkits/diffview). WIP...
 
-### 本轮完整正式依赖图：用户影响
+### Calcit 0.31.0 迁移：用户影响
+
+CLI 与 JS runtime 配对正式 `0.31.0`。请重新安装依赖、生成 JS 并完整刷新，
+不要跨工具链热重载保留旧 Reel 实例。UI 依赖使用已发布的 Respo `0.17.0-alpha.4`、
+Reel `0.7.0-alpha.4`、UI `0.9.0-alpha.4`、Markdown `0.5.0-alpha.4` 和
+JS-FFI `0.2.7`；这不是全部依赖均为稳定版的声明。
+
+Respo 的 `dispatch-op` 槽绑定到显式声明为 `Enum` 的 `DispatchOp` 类型别名。
+别名的代表值不会派发；业务操作与 Reel 控制仍使用原有匿名 Enum，运行时检查、
+公开 updater、Map 存档和 HUD 保持原合同。移除已失效的 `reel.util/generate-id!`
+导入，调用仍解析为内置 `generate-id!`。不新增名义操作包装或强转。
+
+完整 strict、原业务测试、构建和实际页面验收必须分别通过；具体结果以迁移 PR
+精确提交为准。保留原类型门禁、COS 内置校验及部署路径。
+
+### 历史：0.30.1 完整依赖图
+
+
 
 CLI/procs 继续配对正式 `0.30.1`；直接依赖升级为已发布的 Reel `0.6.42`、
 Markdown `0.4.60`、UI `0.8.1`、Respo `0.16.126`、JS-FFI `0.2.6`。
