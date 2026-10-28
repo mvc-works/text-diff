@@ -6,7 +6,7 @@
     {} (:description |Browser-app) (:init-fn 'text-diff.main/main!) (:mode :js) (:reload-fn 'text-diff.main/reload!) (:target :browser)
       :feature-policy $ {}
       :modules $ [] |respo.calcit/ |respo-ui.calcit/ |respo-markdown.calcit/ |reel.calcit/ |js-ffi/
-      :type-slots $ {}
+      :type-slots $ {} $ :dispatch-op |text-diff.schema/DispatchOp
   :files $ {}
     'text-diff.comp.container $ %{} 'FileEntry
       :defs $ {} $ 'comp-container
@@ -190,7 +190,6 @@
             text-diff.comp.container :refer $ comp-container
             text-diff.updater :refer $ updater
             text-diff.schema :as schema
-            reel.util :refer $ listen-devtools! generate-id!
             text-diff.config :as config
             |./calcit.build-errors :default build-errors
             |bottom-tip :default hud!
@@ -198,8 +197,14 @@
             respo.ffi.browser :as respo-browser
             reel.typed :as typed
             js-ffi.shared :as shared
+            reel.util :refer $ listen-devtools!
     'text-diff.schema $ %{} 'FileEntry
       :defs $ {}
+        'DispatchOp $ %{} 'CodeEntry
+          :doc "|Open Enum alias for Respo dispatch-op: application operations and Reel controls retain their existing tags and payloads. This representative value is not dispatched; the explicit Enum schema supplies the slot contract. dispatch! and updater keep their existing runtime checks."
+          :code $ quote $ def DispatchOp (:: :unhandled)
+          :examples $ []
+          :schema $ :: 'Enum
         'Store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstruct Store
             :states $ :: 'Map 'Tag 'Dynamic
