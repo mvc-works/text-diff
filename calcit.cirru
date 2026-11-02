@@ -39,14 +39,14 @@
                     :inner-text $ str |run
                     :on-click $ fn (e d!)
                       println $ :content store
-                when dev? $ comp-typed-reel (>> states :reel) reel $ {}
+                if dev?
+                  Option :some $ comp-typed-reel (>> states :reel) reel $ {}
+                  Option :none
           :examples $ []
           :schema $ quote $ Fn (reel.typed/State Enum text-diff.schema/Store) (-> respo.schema/Component)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns text-diff.comp.container
-          :require
-            hsl.core :refer $ hsl
-            respo-ui.core :as ui
+          :require (respo-ui.core :as ui)
             respo.core :refer $ defcomp >> <> div button textarea span input
             respo.comp.space :refer $ =<
             reel.comp.reel :refer $ comp-typed-reel
@@ -177,6 +177,11 @@
             reel.util :refer $ listen-devtools!
     'text-diff.schema $ %{} 'FileEntry
       :defs $ {}
+        'CursorKey $ %{} 'CodeEntry
+          :doc "|State cursor keys accepted by this app: Tag, String and Number. State payloads stay open."
+          :code $ quote $ defunion CursorKey Tag String Number
+          :examples $ []
+          :schema $ quote UnionDef
         'DispatchOp $ %{} 'CodeEntry
           :doc "|Open Enum alias for Respo dispatch-op: application operations and Reel controls retain their existing tags and payloads. This representative value is not dispatched; the explicit Enum schema supplies the slot contract. dispatch! and updater keep their existing runtime checks."
           :code $ quote $ def DispatchOp (:: :unhandled)
@@ -185,7 +190,7 @@
         'Store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstruct Store
             :states $ quote $ Map Tag Dynamic
-            :content 'String
+            :content String
           :examples $ []
           :schema $ quote StructDef
         'store $ %{} 'CodeEntry (:doc |)
@@ -203,9 +208,9 @@
               (:states cursor s)
                 assoc store :states $ decode-map-as
                   update-state-tree (:states store)
-                    decode-map-as cursor $ :: 'List 'Dynamic
+                    decode-map-as cursor $ quote $ List text-diff.schema/CursorKey
                     , s
-                  :: 'Map 'Tag 'Dynamic
+                  quote $ Map Tag Dynamic
               (:content c)
                 assoc store :content $ decode-map-as c 'String
               (:hydrate-storage d)

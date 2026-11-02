@@ -28,4 +28,11 @@ test('cursor updates preserve content', () => {
   assert.equal(read(updated, tags.content), 'keep');
   const editor = read(read(updated, tags.states), c.init_tags(['editor']).editor);
   assert.equal(read(read(editor, c.init_tags(['data']).data), c.init_tags(['draft']).draft), 'typing');
+  for (const [key, value] of [['|中文', '中文'], ['0', 0]]) {
+    const keyed = apply(populated, `:: :states ([] :editor ${key}) false`);
+    const nested = read(read(read(keyed, tags.states), c.init_tags(['editor']).editor), value);
+    assert.equal(read(nested, c.init_tags(['data']).data), false);
+    assert.equal(read(keyed, tags.content), 'keep');
+  }
+  assert.throws(() => apply(populated, ':: :states ([] :editor false) $ {}'), /CursorKey/);
 });
