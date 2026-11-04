@@ -8,9 +8,8 @@ Text diff
 CLI 与 `@calcit/procs` 配对正式 **0.34.2**，升级后需重新安装完整精确依赖图、
 生成 JS 并完整刷新，不能跨工具链热重载保留旧 Reel 实例。目标为正式 Reel
 **0.9.0**、UI **0.14.1**、Respo **0.19.2**、JS-FFI **0.2.10** 与 Markdown
-**0.7.1**。Markdown 0.7.1 当前仍为上游候选，尚未发布；当前本地检查使用明确标记的
-候选链接，不能当作正式根 Caps strict 已通过。旧 0.7.0 会产生精确依赖冲突，不关闭
-strict 或使用 main/hash 绕过；待正式 tag 后重新安装验证。
+**0.7.1**。已从正式 tag 完成根 Caps strict/toolchain，6 个模块的 Snapshot 与本轮
+实际验收候选逐字节相同，不使用候选链接、main/hash 或关闭 strict 代替正式图。
 
 保留已有 `CursorKey = Tag | String | Number` union，`:states` 的 Bool 等其他 key
 仍按原合同拒绝，false/0 状态 payload、原 Map 存档格式及匿名 Enum/Reel 操作入口
