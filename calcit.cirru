@@ -22,22 +22,25 @@
                   :placeholder |Content
                   :style $ .merge ui/expand ui/textarea $ {} (:height 320)
                   :on-input $ fn (e d!)
-                    hint-fn $ Fn (Map Tag Dynamic)
+                    hint-fn $ Fn respo.schema/RespoEvent
                       Fn Enum $ -> Unit
                       -> Unit
                     let
-                        value $ .unwrap $ get e :value
+                        value $ :value e
                       if (string? value)
                         d! $ :: :content value
                         raise |Expected-string-input-value
-                =< |8px nil
+                space-x 8
                 div
                   {} $ :style ui/expand
                   comp-md "|This is some content with `code`" $ {}
-                  =< |8px nil
+                  space-x 8
                   button $ {} (:style ui/button)
                     :inner-text $ str |run
                     :on-click $ fn (e d!)
+                      hint-fn $ Fn respo.schema/RespoEvent
+                        Fn Enum $ -> Unit
+                        -> Unit
                       println $ :content store
                 if dev?
                   Option :some $ comp-typed-reel (>> states :reel) reel $ {}
@@ -48,7 +51,7 @@
         :code $ quote $ ns text-diff.comp.container
           :require (respo-ui.core :as ui)
             respo.core :refer $ defcomp >> <> div button textarea span input
-            respo.comp.space :refer $ =<
+            respo.comp.space :refer $ space-x
             reel.comp.reel :refer $ comp-typed-reel
             respo-md.comp.md :refer $ comp-md
             text-diff.config :refer $ dev?
@@ -153,7 +156,7 @@
           :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
         'render-app! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn render-app! ()
-            render! (mount-target) (comp-container @*reel) dispatch!
+            with-memo-frame $ fn () $ render! (mount-target) (comp-container @*reel) dispatch!
           :examples $ []
           :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
         'snippets $ %{} 'CodeEntry (:doc |)
@@ -175,6 +178,7 @@
             reel.typed :as typed
             js-ffi.shared :as shared
             reel.util :refer $ listen-devtools!
+            respo.memo :refer $ with-memo-frame
     'text-diff.schema $ %{} 'FileEntry
       :defs $ {}
         'CursorKey $ %{} 'CodeEntry
