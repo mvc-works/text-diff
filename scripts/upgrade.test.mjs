@@ -2,11 +2,11 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import * as c from '../js-out/calcit.core.mjs';
 import { updater } from '../js-out/text-diff.updater.mjs';
-import { store } from '../js-out/text-diff.schema.mjs';
+import { decode_op, store } from '../js-out/text-diff.schema.mjs';
 
 const tags = c.init_tags(['content', 'states']);
 const read = (value, key) => c.option_$o_unwrap(c.get(value, key));
-const apply = (source, op) => updater(source, c.parse_cirru_edn(op), 'test-op', 0);
+const apply = (source, op) => updater(source, c.option_$o_unwrap(decode_op(c.parse_cirru_edn(op))), 'test-op', 0);
 
 test('content update preserves cursor state and leaves original store unchanged', () => {
   const updated = apply(store, ':: :content |hello');
