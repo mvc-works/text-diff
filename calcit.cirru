@@ -23,12 +23,12 @@
                   :style $ .merge ui/expand ui/textarea $ {} (:height 320)
                   :on-input $ fn (e d!)
                     hint-fn $ Fn respo.schema/RespoEvent
-                      Fn Enum $ -> Unit
+                      Fn AnyEnum $ -> Unit
                       -> Unit
                     let
                         value $ :value e
                       if (string? value)
-                        d! $ :: :content value
+                        d! $ text-diff.schema/Op :content value
                         raise |Expected-string-input-value
                 space-x 8
                 div
@@ -39,14 +39,14 @@
                     :inner-text $ str |run
                     :on-click $ fn (e d!)
                       hint-fn $ Fn respo.schema/RespoEvent
-                        Fn Enum $ -> Unit
+                        Fn AnyEnum $ -> Unit
                         -> Unit
                       println $ :content store
                 if dev?
                   Option :some $ comp-typed-reel (>> states :reel) reel $ {}
                   Option :none
           :examples $ []
-          :schema $ quote $ Fn (reel.typed/State Enum text-diff.schema/Store) (-> respo.schema/Component)
+          :schema $ quote $ Fn (reel.typed/State text-diff.schema/Op text-diff.schema/Store) (-> respo.schema/Component)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns text-diff.comp.container
           :require (respo-ui.core :as ui)
@@ -91,30 +91,30 @@
     'text-diff.main $ %{} 'FileEntry
       :defs $ {}
         '*reel $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defref *reel (typed/new-reel schema/store)
+          :code $ quote $ defref *reel
+            typed/State :base schema/store :store schema/store :records ([]) :pointer (Option :none) :stopped? false :display? false :merged? false
           :examples $ []
-          :schema $ quote $ Ref (reel.typed/State Enum text-diff.schema/Store)
+          :schema $ quote $ Ref (reel.typed/State text-diff.schema/Op text-diff.schema/Store)
         'dispatch! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch! (op)
-            if (enum? op)
-              do
-                when config/dev? $ println |Dispatch: op
-                match (typed/decode-control op)
-                  (:some control)
-                    reset! *reel $ typed/apply-control updater @*reel control
-                  (:none)
-                    reset! *reel $ typed/record-op updater @*reel op (generate-id!)
-                      :timestamp $ shared/date-now-snapshot
-                , &unit
-              raise "|Expected an operation enum"
+            when config/dev? $ println |Dispatch: op
+            match (typed/decode-control op)
+              (:some control)
+                reset! *reel $ typed/apply-control updater @*reel control
+              (:none)
+                match (schema/decode-op op)
+                  (:some action)
+                    reset! *reel $ typed/record-op updater @*reel action (generate-id!) (shared/now-ms)
+                  (:none) &unit
+            , &unit
           :examples $ []
-          :schema $ quote $ Fn Dynamic (-> Unit) (:features :js-ffi)
+          :schema $ quote $ Fn AnyEnum (-> Unit) (:features :js-ffi)
         'main! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn main! ()
             println "|Running mode:" $ if config/dev? |dev |release
             render-app!
             add-watch! *reel :changes $ fn (r p)
-              hint-fn $ Fn (reel.typed/State Enum text-diff.schema/Store) (reel.typed/State Enum text-diff.schema/Store) (-> Unit)
+              hint-fn $ Fn (reel.typed/State text-diff.schema/Op text-diff.schema/Store) (reel.typed/State text-diff.schema/Op text-diff.schema/Store) (-> Unit)
               render-app!
               , &unit
             listen-devtools! |a dispatch!
@@ -145,7 +145,7 @@
             if (nil? build-errors)
               do (remove-watch! *reel :changes) (clear-cache!)
                 add-watch! *reel :changes $ fn (reel prev)
-                  hint-fn $ Fn (reel.typed/State Enum text-diff.schema/Store) (reel.typed/State Enum text-diff.schema/Store) (-> Unit)
+                  hint-fn $ Fn (reel.typed/State text-diff.schema/Op text-diff.schema/Store) (reel.typed/State text-diff.schema/Op text-diff.schema/Store) (-> Unit)
                   render-app!
                   , &unit
                 reset! *reel $ typed/refresh updater @*reel schema/store
@@ -156,7 +156,9 @@
           :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
         'render-app! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn render-app! ()
-            with-memo-frame $ fn () $ render! (mount-target) (comp-container @*reel) dispatch!
+            render-with! (mount-target)
+              fn () $ comp-container @*reel
+              , dispatch!
           :examples $ []
           :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
         'snippets $ %{} 'CodeEntry (:doc |)
@@ -166,7 +168,7 @@
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns text-diff.main
           :require
-            respo.core :refer $ render! clear-cache! realize-ssr!
+            respo.core :refer $ render-with! clear-cache!
             text-diff.comp.container :refer $ comp-container
             text-diff.updater :refer $ updater
             text-diff.schema :as schema
@@ -178,7 +180,6 @@
             reel.typed :as typed
             js-ffi.shared :as shared
             reel.util :refer $ listen-devtools!
-            respo.memo :refer $ with-memo-frame
     'text-diff.schema $ %{} 'FileEntry
       :defs $ {}
         'CursorKey $ %{} 'CodeEntry
@@ -187,16 +188,40 @@
           :examples $ []
           :schema $ quote UnionDef
         'DispatchOp $ %{} 'CodeEntry
-          :doc "|Open Enum alias for Respo dispatch-op: application operations and Reel controls retain their existing tags and payloads. This representative value is not dispatched; the explicit Enum schema supplies the slot contract. dispatch! and updater keep their existing runtime checks."
+          :doc "|Respo dispatch slot accepts application operations and Reel controls."
           :code $ quote $ def DispatchOp (:: :unhandled)
           :examples $ []
-          :schema $ quote Enum
+          :schema $ quote AnyEnum
+        'Op $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defenum Op
+            :states (List text-diff.schema/CursorKey) Dynamic
+            :content String
+            :hydrate-storage text-diff.schema/Store
+          :examples $ []
+          :schema $ quote EnumDef
         'Store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstruct Store
-            :states $ quote $ Map Tag Dynamic
+            :states $ Map Tag Dynamic
             :content String
           :examples $ []
           :schema $ quote StructDef
+        'decode-op $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn decode-op (op)
+            match op
+              (:states cursor data)
+                Option :some $ Op :states
+                  decode-map-as cursor $ List text-diff.schema/CursorKey
+                  , data
+              (:content content)
+                Option :some $ Op :content $ decode-map-as content String
+              (:hydrate-storage data)
+                Option :some $ Op :hydrate-storage $ decode-map-as
+                  if (struct? data) (&struct:to-map data) data
+                  , text-diff.schema/Store
+              _ $ do (eprintln "|Unknown op:" op) (Option :none)
+          :examples $ []
+          :schema $ quote $ Fn AnyEnum
+            -> $ Option text-diff.schema/Op
         'store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def store
             Store :states ({}) :content |
@@ -209,21 +234,14 @@
         %{} 'CodeEntry (:doc |)
           :code $ quote $ defn updater (store op op-id op-time)
             match op
-              (:states cursor s)
+              (:states cursor data)
                 assoc store :states $ decode-map-as
-                  update-state-tree (:states store)
-                    decode-map-as cursor $ quote $ List text-diff.schema/CursorKey
-                    , s
-                  quote $ Map Tag Dynamic
-              (:content c)
-                assoc store :content $ decode-map-as c 'String
-              (:hydrate-storage d)
-                decode-map-as
-                  if (struct? d) (&struct:to-map d) d
-                  , 'text-diff.schema/Store
-              _ $ do (eprintln "|Unknown op:" op) store
+                  update-state-tree (:states store) cursor data
+                  Map Tag Dynamic
+              (:content content) (assoc store :content content)
+              (:hydrate-storage stored) stored
           :examples $ []
-          :schema $ quote $ Fn text-diff.schema/Store Enum String Number (-> text-diff.schema/Store)
+          :schema $ quote $ Fn text-diff.schema/Store text-diff.schema/Op String Number (-> text-diff.schema/Store)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns text-diff.updater
           :require $ respo.cursor :refer $ update-state-tree
