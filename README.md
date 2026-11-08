@@ -5,7 +5,7 @@ Text diff
 
 ### 使用者影响
 
-升级到 Calcit 和 `@calcit/procs` **0.37.0** 后，请重新安装依赖、编译并刷新。文本输入、Run 输出、原 Map 存档和页面 HUD 继续适用。
+升级到 Calcit 和 `@calcit/procs` **0.38.0** 后，请重新安装依赖、编译并刷新。文本输入、Run 输出、原 Map 存档和页面 HUD 继续适用。 应用操作和 Reel 控制解码后通过 `ResolvedOp` union 区分，已有 Reel 标签和存档结构保持兼容。
 
 Reel 使用 `State<Op, Store>`。旧操作在入口解码，业务更新器接收具名操作。状态路径沿用 `CursorKey = Tag | String | Number`，已有 Map 或 Struct 存档仍在恢复时校验。恢复成功后才注册离页保存。
 
@@ -16,7 +16,7 @@ Reel 使用 `State<Op, Store>`。旧操作在入口解码，业务更新器接�
 Use `calcit.cirru` and `deps.cirru`; do not restore the retired `compact.cirru`
 or `package.cirru`. Generated `js-out/` is not committed.
 
-Use Node 24 and Yarn 4.18.0. Install Calcit 0.37.0 and Caps 0.1.1 separately
+Use Node 24 and Yarn 4.18.0. Install Calcit 0.38.0 and Caps 0.1.1 separately
 (the latter follows [the official Caps installation](https://github.com/calcit-lang/caps)); Corepack/Yarn does not install Caps. Strict dependency installation and the original type/test gates are retained.
 Browser and production acceptance remain separate from successful compilation.
 

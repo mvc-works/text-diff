@@ -3,6 +3,7 @@ import test from 'node:test';
 import * as c from '../js-out/calcit.core.mjs';
 import { updater } from '../js-out/text-diff.updater.mjs';
 import { decode_op, store } from '../js-out/text-diff.schema.mjs';
+import { Control } from '../js-out/reel.typed.mjs';
 
 const tags = c.init_tags(['content', 'states']);
 const read = (value, key) => c.option_$o_unwrap(c.get(value, key));
@@ -35,4 +36,9 @@ test('cursor updates preserve content', () => {
     assert.equal(read(keyed, tags.content), 'keep');
   }
   assert.throws(() => apply(populated, ':: :states ([] :editor false) $ {}'), /CursorKey/);
+});
+
+test('legacy Reel controls decode to the nominal control member', () => {
+  const control = c.option_$o_unwrap(decode_op(c.parse_cirru_edn(':: :reel/toggle')));
+  assert.equal(c.option_$o_unwrap(c._$n_enum_$o_definition(control)), Control);
 });
