@@ -98,14 +98,14 @@
         'dispatch! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch! (op)
             when config/dev? $ println |Dispatch: op
-            match (typed/decode-control op)
-              (:some control)
-                reset! *reel $ typed/apply-control updater @*reel control
-              (:none)
-                match (schema/decode-op op)
-                  (:some action)
+            match (schema/decode-op op)
+              (:some resolved)
+                match resolved
+                  (reel.typed/Control control)
+                    reset! *reel $ typed/apply-control updater @*reel control
+                  (text-diff.schema/Op action)
                     reset! *reel $ typed/record-op updater @*reel action (generate-id!) (shared/now-ms)
-                  (:none) &unit
+              (:none) &unit
             , &unit
           :examples $ []
           :schema $ quote $ Fn AnyEnum (-> Unit) (:features :js-ffi)
@@ -199,6 +199,10 @@
             :hydrate-storage text-diff.schema/Store
           :examples $ []
           :schema $ quote EnumDef
+        'ResolvedOp $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defunion ResolvedOp text-diff.schema/Op reel.typed/Control
+          :examples $ []
+          :schema $ quote UnionDef
         'Store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstruct Store
             :states $ Map Tag Dynamic
@@ -207,21 +211,28 @@
           :schema $ quote StructDef
         'decode-op $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn decode-op (op)
-            match op
-              (:states cursor data)
-                Option :some $ Op :states
-                  decode-map-as cursor $ List text-diff.schema/CursorKey
-                  , data
-              (:content content)
-                Option :some $ Op :content $ decode-map-as content String
-              (:hydrate-storage data)
-                Option :some $ Op :hydrate-storage $ decode-map-as
-                  if (struct? data) (&struct:to-map data) data
-                  , text-diff.schema/Store
-              _ $ do (eprintln "|Unknown op:" op) (Option :none)
+            let
+                some-action $ fn (action)
+                  hint-fn $ Fn text-diff.schema/ResolvedOp $ -> (Option text-diff.schema/ResolvedOp)
+                  Option :some action
+              match (reel.typed/decode-control op)
+                (:some control) (some-action control)
+                (:none)
+                  match op
+                    (:states cursor data)
+                      some-action $ Op :states
+                        decode-map-as cursor $ List text-diff.schema/CursorKey
+                        , data
+                    (:content content)
+                      some-action $ Op :content $ decode-map-as content String
+                    (:hydrate-storage data)
+                      some-action $ Op :hydrate-storage $ decode-map-as
+                        if (struct? data) (&struct:to-map data) data
+                        , text-diff.schema/Store
+                    _ $ do (eprintln "|Unknown op:" op) (Option :none)
           :examples $ []
           :schema $ quote $ Fn AnyEnum
-            -> $ Option text-diff.schema/Op
+            -> $ Option text-diff.schema/ResolvedOp
         'store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def store
             Store :states ({}) :content |
