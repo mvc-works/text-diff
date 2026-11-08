@@ -6,7 +6,7 @@
     {} (:description |Browser-app) (:init-fn 'text-diff.main/main!) (:mode :js) (:reload-fn 'text-diff.main/reload!) (:target :browser)
       :feature-policy $ {}
       :modules $ [] |respo.calcit/ |respo-ui.calcit/ |respo-markdown.calcit/ |reel.calcit/ |js-ffi/
-      :type-slots $ {} $ :dispatch-op |text-diff.schema/DispatchOp
+      :type-slots $ {} $ :dispatch-op 'text-diff.schema/DispatchOp
   :files $ {}
     'text-diff.comp.container $ %{} 'FileEntry
       :defs $ {} $ 'comp-container
@@ -23,7 +23,7 @@
                   :style $ .merge ui/expand ui/textarea $ {} (:height 320)
                   :on-input $ fn (e d!)
                     hint-fn $ Fn respo.schema/RespoEvent
-                      Fn AnyEnum $ -> Unit
+                      Fn text-diff.schema/Op $ -> Unit
                       -> Unit
                     let
                         value $ :value e
@@ -39,7 +39,7 @@
                     :inner-text $ str |run
                     :on-click $ fn (e d!)
                       hint-fn $ Fn respo.schema/RespoEvent
-                        Fn AnyEnum $ -> Unit
+                        Fn text-diff.schema/Op $ -> Unit
                         -> Unit
                       println $ :content store
                 if dev?
