@@ -6,12 +6,12 @@
     {} (:description |Browser-app) (:init-fn 'text-diff.main/main!) (:mode :js) (:reload-fn 'text-diff.main/reload!) (:target :browser)
       :feature-policy $ {}
       :modules $ [] |respo.calcit/ |respo-ui.calcit/ |respo-markdown.calcit/ |reel.calcit/ |js-ffi/
-      :type-slots $ {} $ :dispatch-op 'text-diff.schema/DispatchOp
+      :type-slots $ {} $ :dispatch-op 'text-diff.schema/Op
   :files $ {}
     'text-diff.comp.container $ %{} 'FileEntry
       :defs $ {} $ 'comp-container
         %{} 'CodeEntry (:doc |)
-          :code $ quote $ defcomp comp-container (reel)
+          :code $ quote $ defcomp comp-container (reel on-control)
             let
                 store $ :store reel
                 states $ :states store
@@ -43,10 +43,12 @@
                         -> Unit
                       println $ :content store
                 if dev?
-                  Option :some $ comp-typed-reel (>> states :reel) reel $ {}
+                  Option :some $ comp-typed-reel (>> states :reel) reel ({}) on-control
                   Option :none
           :examples $ []
-          :schema $ quote $ Fn (reel.typed/State text-diff.schema/Op text-diff.schema/Store) (-> respo.schema/Component)
+          :schema $ quote $ Fn (reel.typed/State text-diff.schema/Op text-diff.schema/Store)
+            Fn reel.typed/Control $ -> Unit
+            -> respo.schema/Component
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns text-diff.comp.container
           :require (respo-ui.core :as ui)
@@ -98,17 +100,13 @@
         'dispatch! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch! (op)
             when config/dev? $ println |Dispatch: op
-            match (schema/decode-op op)
-              (:some resolved)
-                match resolved
-                  (reel.typed/Control control)
-                    reset! *reel $ typed/apply-control updater @*reel control
-                  (text-diff.schema/Op action)
-                    reset! *reel $ typed/record-op updater @*reel action (generate-id!) (shared/now-ms)
-              (:none) &unit
+            reset! *reel $ match op
+              (reel.typed/Control control) (typed/apply-control updater @*reel control)
+              (text-diff.schema/Op action)
+                typed/record-op updater @*reel action (generate-id!) (shared/now-ms)
             , &unit
           :examples $ []
-          :schema $ quote $ Fn AnyEnum (-> Unit) (:features :js-ffi)
+          :schema $ quote $ Fn text-diff.schema/ResolvedOp (-> Unit) (:features :js-ffi)
         'main! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn main! ()
             println "|Running mode:" $ if config/dev? |dev |release
@@ -117,11 +115,11 @@
               hint-fn $ Fn (reel.typed/State text-diff.schema/Op text-diff.schema/Store) (reel.typed/State text-diff.schema/Op text-diff.schema/Store) (-> Unit)
               render-app!
               , &unit
-            listen-devtools! |a dispatch!
+            listen-devtools! |a on-control!
             match
               browser/storage-get $ .unwrap $ get config/site :storage-key
               (:some raw)
-                dispatch! $ :: :hydrate-storage $ parse-cirru-edn raw
+                dispatch! $ schema/Op :hydrate-storage $ schema/decode-store (parse-cirru-edn raw)
               (:none) &unit
             browser/add-event-listener! |beforeunload $ fn (event) (persist-storage!)
             println "|App started."
@@ -132,6 +130,10 @@
             .unwrap $ respo-browser/query-selector |.app
           :examples $ []
           :schema $ quote $ Fn (-> respo.dom/DomElement) (:features :js-ffi)
+        'on-control! $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn on-control! (control) (dispatch! control)
+          :examples $ []
+          :schema $ quote $ Fn reel.typed/Control (-> Unit)
         'persist-storage! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn persist-storage! ()
             browser/storage-set!
@@ -157,8 +159,10 @@
         'render-app! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn render-app! ()
             render-with! (mount-target)
-              fn () $ comp-container @*reel
-              , dispatch!
+              fn () $ comp-container @*reel on-control!
+              fn (op)
+                hint-fn $ Fn text-diff.schema/Op $ -> Unit
+                dispatch! op
           :examples $ []
           :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
         'snippets $ %{} 'CodeEntry (:doc |)
@@ -187,11 +191,6 @@
           :code $ quote $ defunion CursorKey Tag String Number
           :examples $ []
           :schema $ quote UnionDef
-        'DispatchOp $ %{} 'CodeEntry
-          :doc "|Respo dispatch slot accepts application operations and Reel controls."
-          :code $ quote $ def DispatchOp (:: :unhandled)
-          :examples $ []
-          :schema $ quote AnyEnum
         'Op $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defenum Op
             :states (List text-diff.schema/CursorKey) Dynamic
@@ -209,30 +208,13 @@
             :content String
           :examples $ []
           :schema $ quote StructDef
-        'decode-op $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn decode-op (op)
-            let
-                some-action $ fn (action)
-                  hint-fn $ Fn text-diff.schema/ResolvedOp $ -> (Option text-diff.schema/ResolvedOp)
-                  Option :some action
-              match (reel.typed/decode-control op)
-                (:some control) (some-action control)
-                (:none)
-                  match op
-                    (:states cursor data)
-                      some-action $ Op :states
-                        decode-map-as cursor $ List text-diff.schema/CursorKey
-                        , data
-                    (:content content)
-                      some-action $ Op :content $ decode-map-as content String
-                    (:hydrate-storage data)
-                      some-action $ Op :hydrate-storage $ decode-map-as
-                        if (struct? data) (&struct:to-map data) data
-                        , text-diff.schema/Store
-                    _ $ do (eprintln "|Unknown op:" op) (Option :none)
+        'decode-store $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn decode-store (data)
+            decode-map-as
+              if (struct? data) (&struct:to-map data) data
+              , text-diff.schema/Store
           :examples $ []
-          :schema $ quote $ Fn AnyEnum
-            -> $ Option text-diff.schema/ResolvedOp
+          :schema $ quote $ Fn Input (-> text-diff.schema/Store) (:generics Input)
         'store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def store
             Store :states ({}) :content |
