@@ -36,6 +36,9 @@ test('cursor updates preserve content', () => {
     const nested = read(read(read(keyed, tags.states), tags.editor), key);
     assert.equal(read(nested, tags.data), false);
     assert.equal(read(keyed, tags.content), 'keep');
+    const root = apply(populated, tags.states, c._$L_(key), false);
+    const restored = decode_store(c.parse_cirru_edn(c.format_cirru_edn(c._$n_struct_$o_to_map(root))));
+    assert.equal(read(read(read(restored, tags.states), key), tags.data), false);
   }
   assert.throws(() => apply(populated, tags.states, c._$L_(tags.editor, false), c._$n__$M_()), /CursorKey|declared type/);
 });

@@ -14,7 +14,6 @@
           :code $ quote $ defcomp comp-container (reel on-control)
             let
                 store $ :store reel
-                states $ :states store
               div
                 {} $ :style $ .merge ui/global ui/row
                 textarea $ {}
@@ -43,7 +42,7 @@
                         -> Unit
                       println $ :content store
                 if dev?
-                  Option :some $ comp-typed-reel (>> states :reel) reel ({}) on-control
+                  Option :some $ comp-controlled-reel reel ({}) on-control
                   Option :none
           :examples $ []
           :schema $ quote $ Fn (reel.typed/State text-diff.schema/Op text-diff.schema/Store)
@@ -52,9 +51,9 @@
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns text-diff.comp.container
           :require (respo-ui.core :as ui)
-            respo.core :refer $ defcomp >> <> div button textarea span input
+            respo.core :refer $ defcomp <> div button textarea span input
             respo.comp.space :refer $ space-x
-            reel.comp.reel :refer $ comp-typed-reel
+            reel.comp.reel :refer $ comp-controlled-reel
             respo-md.comp.md :refer $ comp-md
             text-diff.config :refer $ dev?
     'text-diff.config $ %{} 'FileEntry
@@ -204,7 +203,7 @@
           :schema $ quote UnionDef
         'Store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstruct Store
-            :states $ Map Tag Dynamic
+            :states $ Map text-diff.schema/CursorKey Dynamic
             :content String
           :examples $ []
           :schema $ quote StructDef
@@ -230,7 +229,7 @@
               (:states cursor data)
                 assoc store :states $ decode-map-as
                   update-state-tree (:states store) cursor data
-                  Map Tag Dynamic
+                  Map text-diff.schema/CursorKey Dynamic
               (:content content) (assoc store :content content)
               (:hydrate-storage stored) stored
           :examples $ []
