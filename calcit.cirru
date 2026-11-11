@@ -42,8 +42,8 @@
                         -> Unit
                       println $ :content store
                 if dev?
-                  Option :some $ comp-controlled-reel reel ({}) on-control
-                  Option :none
+                  Some $ comp-controlled-reel reel ({}) on-control
+                  , None
           :examples $ []
           :schema $ quote $ Fn (reel.typed/State text-diff.schema/Op text-diff.schema/Store)
             Fn reel.typed/Control $ -> Unit
@@ -93,9 +93,9 @@
       :defs $ {}
         '*reel $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defref *reel
-            typed/State :base schema/store :store schema/store :records ([]) :pointer (Option :none) :stopped? false :display? false :merged? false
+            typed/State :base schema/store :store schema/store :records ([]) :pointer None :stopped? false :display? false :merged? false
           :examples $ []
-          :schema $ quote $ Ref (reel.typed/State text-diff.schema/Op text-diff.schema/Store)
+          :schema $ quote $ Ref (typed/State schema/Op schema/Store)
         'dispatch! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch! (op)
             when config/dev? $ println |Dispatch: op
@@ -105,7 +105,7 @@
                 typed/record-op updater @*reel action (generate-id!) (shared/now-ms)
             , &unit
           :examples $ []
-          :schema $ quote $ Fn text-diff.schema/ResolvedOp (-> Unit) (:features :js-ffi)
+          :schema $ quote $ Fn schema/ResolvedOp (-> Unit) (:features :js-ffi)
         'main! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn main! ()
             println "|Running mode:" $ if config/dev? |dev |release
@@ -132,7 +132,7 @@
         'on-control! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn on-control! (control) (dispatch! control)
           :examples $ []
-          :schema $ quote $ Fn reel.typed/Control (-> Unit)
+          :schema $ quote $ Fn typed/Control (-> Unit)
         'persist-storage! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn persist-storage! ()
             browser/storage-set!
@@ -213,12 +213,12 @@
               if (struct? data) (&struct:to-map data) data
               , text-diff.schema/Store
           :examples $ []
-          :schema $ quote $ Fn Input (-> text-diff.schema/Store) (:generics Input)
+          :schema $ quote $ Fn Input (-> Store) (:generics Input)
         'store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def store
             Store :states ({}) :content |
           :examples $ []
-          :schema $ quote text-diff.schema/Store
+          :schema $ quote Store
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns text-diff.schema
     'text-diff.updater $ %{} 'FileEntry
