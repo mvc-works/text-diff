@@ -111,7 +111,7 @@
             println "|Running mode:" $ if config/dev? |dev |release
             render-app!
             add-watch! *reel :changes $ fn (r p)
-              hint-fn $ Fn (reel.typed/State text-diff.schema/Op text-diff.schema/Store) (reel.typed/State text-diff.schema/Op text-diff.schema/Store) (-> Unit)
+              hint-fn $ Fn (typed/State schema/Op schema/Store) (typed/State schema/Op schema/Store) (-> Unit)
               render-app!
               , &unit
             listen-devtools! |a on-control!
@@ -146,7 +146,7 @@
             if (nil? build-errors)
               do (remove-watch! *reel :changes) (clear-cache!)
                 add-watch! *reel :changes $ fn (reel prev)
-                  hint-fn $ Fn (reel.typed/State text-diff.schema/Op text-diff.schema/Store) (reel.typed/State text-diff.schema/Op text-diff.schema/Store) (-> Unit)
+                  hint-fn $ Fn (typed/State schema/Op schema/Store) (typed/State schema/Op schema/Store) (-> Unit)
                   render-app!
                   , &unit
                 reset! *reel $ typed/refresh updater @*reel schema/store
@@ -160,7 +160,7 @@
             render-with! (mount-target)
               fn () $ comp-container @*reel on-control!
               fn (op)
-                hint-fn $ Fn text-diff.schema/Op $ -> Unit
+                hint-fn $ Fn schema/Op $ -> Unit
                 dispatch! op
           :examples $ []
           :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
