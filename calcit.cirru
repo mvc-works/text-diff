@@ -46,9 +46,9 @@
                   , None
           :examples $ []
           :schema $ quote $ Fn (reel.typed/State text-diff.schema/Op text-diff.schema/Store)
-            Fn reel.typed/Control $ -> Unit
+            Fn reel.typed/Control (-> Unit) (:features :io :state)
             -> respo.schema/Component
-            :features :io
+            :features :io :state
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns text-diff.comp.container
           :require (respo-ui.core :as ui)
