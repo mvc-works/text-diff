@@ -228,13 +228,11 @@
           :code $ quote $ defn updater (store op op-id op-time)
             match op
               (:states cursor data)
-                assoc store :states $ decode-map-as
-                  update-state-tree (:states store) cursor data
-                  Map text-diff.schema/CursorKey Dynamic
+                assoc store :states $ update-state-map (:states store) cursor data
               (:content content) (assoc store :content content)
               (:hydrate-storage stored) stored
           :examples $ []
           :schema $ quote $ Fn text-diff.schema/Store text-diff.schema/Op String Number (-> text-diff.schema/Store)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns text-diff.updater
-          :require $ respo.cursor :refer $ update-state-tree
+          :require $ respo.cursor :refer $ update-state-map
