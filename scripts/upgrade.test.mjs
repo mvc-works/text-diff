@@ -27,6 +27,9 @@ test('hydration preserves the persisted map format', () => {
 
 test('cursor updates preserve content', () => {
   const populated = apply(store, tags.content, 'keep');
+  const rootData = apply(populated, tags.states, c._$L_(), false);
+  assert.equal(read(read(rootData, tags.states), tags.data), false);
+  assert.equal(read(rootData, tags.content), 'keep');
   const updated = apply(populated, tags.states, c._$L_(tags.editor), c._$n__$M_(tags.draft, 'typing'));
   assert.equal(read(updated, tags.content), 'keep');
   const editor = read(read(updated, tags.states), tags.editor);
