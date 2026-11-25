@@ -5,18 +5,18 @@ Text diff
 
 ### 使用者影响
 
-升级到 Calcit 和 `@calcit/procs` **0.44.0** 后，请重新安装依赖、编译并刷新。文本输入、Run 输出、原 Map 存档和页面 HUD 继续适用。 应用操作和 Reel 控制通过 `ResolvedOp` union 区分。Reel 面板直接接收独立控制回调，原存档结构保持兼容。
+升级到 Calcit 和 `@calcit/procs` **0.45.1** 后，请重新安装依赖、编译并刷新。文本输入、Run 输出、原 Map 存档和页面 HUD 继续适用。 应用操作和 Reel 控制通过 `ResolvedOp` union 区分。Reel 面板直接接收独立控制回调，原存档结构保持兼容。
 
 Reel 使用 `State<Op, Store>`。业务更新器接收具名操作。状态路径和顶层状态键统一使用 `CursorKey = Tag | String | Number`，已有 Map 或 Struct 存档仍在恢复时校验。 状态更新使用保持根 Map 类型的 Respo 接口，空路径与混合键行为不变。恢复成功后才注册离页保存。
 
-正式依赖为 Respo **0.19.13**、Reel **0.11.5**、Markdown **0.9.5**、UI **0.15.7**、JS-FFI **0.2.19**，传递 Router **0.12.11**。
+正式依赖为 Respo **0.19.18**、Reel **0.11.9**、Markdown **0.9.9**、UI **0.16.5**、JS-FFI **0.2.24**，传递 Router **0.12.17**。
 
 ### Workflow
 
 Use `calcit.cirru` and `deps.cirru`; do not restore the retired `compact.cirru`
 or `package.cirru`. Generated `js-out/` is not committed.
 
-Use Node 24 and Yarn 4.18.0. Install Calcit 0.44.0 and Caps 0.1.1 separately
+Use Node 24 and Yarn 4.18.0. Install Calcit 0.45.1 and Caps 0.1.1 separately
 (the latter follows [the official Caps installation](https://github.com/calcit-lang/caps)); Corepack/Yarn does not install Caps. Strict dependency installation and the original type/test gates are retained.
 Browser and production acceptance remain separate from successful compilation.
 
